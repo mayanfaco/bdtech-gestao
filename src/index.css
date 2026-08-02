@@ -1,0 +1,23 @@
+html, body, #root {
+  height: 100%;
+}
+
+/* Small layout utility helpers not covered by design-system components,
+   for the app-shell chrome (sidebar/topbar/dashboard grids). */
+.bd-u-flex { display: flex; }
+.bd-u-flex-col { display: flex; flex-direction: column; }
+.bd-u-items-center { align-items: center; }
+.bd-u-justify-between { justify-content: space-between; }
+.bd-u-gap-1 { gap: var(--bd-space-1); }
+.bd-u-gap-2 { gap: var(--bd-space-2); }
+.bd-u-gap-3 { gap: var(--bd-space-3); }
+.bd-u-gap-4 { gap: var(--bd-space-4); }
+.bd-u-gap-6 { gap: var(--bd-space-6); }
+.bd-u-gap-8 { gap: var(--bd-space-8); }
+.bd-u-grid { display: grid; }
+.bd-u-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); }
+.bd-u-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+.bd-u-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 900px) {
+  .bd-u-grid-2, .bd-u-grid-3, .bd-u-grid-4 { grid-template-columns: 1fr; }
+}

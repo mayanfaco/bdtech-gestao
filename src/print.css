@@ -1,0 +1,11 @@
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; }
+  @page { size: A4; margin: 20mm; }
+}
+.bd-print-page {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: var(--bd-space-8);
+  background: #fff;
+}

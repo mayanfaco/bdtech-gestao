@@ -1,0 +1,137 @@
+/* ============================================================
+   BDTECH · Color Tokens
+   Extracted from the institutional portal reference:
+   azure CTA blue, deep navy gradients, near-white surfaces.
+   Anchored to the BDTECH brand navy (#011933).
+   ============================================================ */
+
+:root {
+  /* ---------------------------------------------------------
+     PRIMARY · "BD Azure"  — CTAs, links, primary actions
+     Anchor 500 = #009FE0 (the reference CTA / FAQ-band blue)
+     --------------------------------------------------------- */
+  --bd-primary-50:  #E8F7FD;
+  --bd-primary-100: #C5ECFA;
+  --bd-primary-200: #95DCF4;
+  --bd-primary-300: #5FC8EE;
+  --bd-primary-400: #2EB2E8;
+  --bd-primary-500: #009FE0;
+  --bd-primary-600: #0081BD;
+  --bd-primary-700: #006699;
+  --bd-primary-800: #014E75;
+  --bd-primary-900: #093E5B;
+
+  /* ---------------------------------------------------------
+     SECONDARY · "Deep Navy" — backgrounds, headers, brand
+     Anchor 700 = #012E5A · darkest 900 = #011933 (logo navy)
+     --------------------------------------------------------- */
+  --bd-navy-50:  #EAEFF6;
+  --bd-navy-100: #C9D6E8;
+  --bd-navy-200: #9FB6D2;
+  --bd-navy-300: #6F8FB6;
+  --bd-navy-400: #45689A;
+  --bd-navy-500: #244B7C;
+  --bd-navy-600: #0E3766;
+  --bd-navy-700: #012E5A;
+  --bd-navy-800: #012345;
+  --bd-navy-900: #011933;
+
+  /* ---------------------------------------------------------
+     ACCENT · "Sky" — highlights, light-on-dark emphasis,
+     active glass borders, decorative graphic elements
+     --------------------------------------------------------- */
+  --bd-accent-50:  #EBF9FE;
+  --bd-accent-100: #CDF0FC;
+  --bd-accent-200: #A6E4FA;
+  --bd-accent-300: #72D4F6;
+  --bd-accent-400: #3DBDF0;
+  --bd-accent-500: #18A6E6;
+  --bd-accent-600: #0E86C4;
+  --bd-accent-700: #0C6A9C;
+  --bd-accent-800: #0F567C;
+  --bd-accent-900: #114863;
+
+  /* ---------------------------------------------------------
+     NEUTRAL · cool, slightly blue-tinted gray ramp
+     --------------------------------------------------------- */
+  --bd-neutral-0:   #FFFFFF;
+  --bd-neutral-50:  #F5F8FB;
+  --bd-neutral-100: #EAF0F6;
+  --bd-neutral-200: #D7E0EA;
+  --bd-neutral-300: #B7C4D3;
+  --bd-neutral-400: #8B9AAD;
+  --bd-neutral-500: #647386;
+  --bd-neutral-600: #4A586A;
+  --bd-neutral-700: #344151;
+  --bd-neutral-800: #212C3A;
+  --bd-neutral-900: #0F1822;
+
+  /* ---------------------------------------------------------
+     SEMANTIC · status ramps (small, 3 stops each)
+     --------------------------------------------------------- */
+  --bd-success-50:  #E7F7EE;
+  --bd-success-500: #16A34A;
+  --bd-success-700: #0F7A37;
+
+  --bd-warning-50:  #FEF4E6;
+  --bd-warning-500: #F59E0B;
+  --bd-warning-700: #B4730A;
+
+  --bd-danger-50:   #FCEBEC;
+  --bd-danger-500:  #E5484D;
+  --bd-danger-700:  #B5292E;
+
+  --bd-info-50:     var(--bd-primary-50);
+  --bd-info-500:    var(--bd-primary-500);
+  --bd-info-700:    var(--bd-primary-700);
+
+  /* =========================================================
+     SEMANTIC ALIASES  (use these in components)
+     ========================================================= */
+
+  /* Brand */
+  --bd-brand:           var(--bd-primary-500);
+  --bd-brand-strong:    var(--bd-primary-600);
+  --bd-brand-navy:      var(--bd-navy-900);
+
+  /* Text */
+  --bd-text-strong:     var(--bd-navy-900);
+  --bd-text-body:       var(--bd-neutral-700);
+  --bd-text-muted:      var(--bd-neutral-500);
+  --bd-text-subtle:     var(--bd-neutral-400);
+  --bd-text-link:       var(--bd-primary-600);
+  --bd-text-inverse:    #FCFEFF;
+  --bd-text-on-brand:   #FFFFFF;
+
+  /* Surfaces */
+  --bd-surface-page:    var(--bd-neutral-50);
+  --bd-surface-card:    var(--bd-neutral-0);
+  --bd-surface-raised:  var(--bd-neutral-0);
+  --bd-surface-sunken:  var(--bd-neutral-100);
+  --bd-surface-inverse: var(--bd-navy-900);
+  --bd-surface-brand:   var(--bd-primary-500);
+
+  /* Borders */
+  --bd-border-subtle:   var(--bd-neutral-100);
+  --bd-border-default:  var(--bd-neutral-200);
+  --bd-border-strong:   var(--bd-neutral-300);
+  --bd-border-brand:    var(--bd-primary-500);
+  --bd-border-inverse:  rgba(255, 255, 255, 0.16);
+
+  /* Interaction states (overlays applied on base colors) */
+  --bd-state-hover:     rgba(1, 25, 51, 0.06);
+  --bd-state-active:    rgba(1, 25, 51, 0.12);
+  --bd-state-hover-inverse:  rgba(255, 255, 255, 0.10);
+  --bd-state-active-inverse: rgba(255, 255, 255, 0.18);
+  --bd-state-selected:  var(--bd-primary-50);
+  --bd-state-disabled-bg:   var(--bd-neutral-100);
+  --bd-state-disabled-fg:   var(--bd-neutral-400);
+
+  /* Focus */
+  --bd-focus-ring:      var(--bd-primary-500);
+  --bd-focus-ring-offset: #FFFFFF;
+
+  /* Overlay / scrim */
+  --bd-overlay:         rgba(1, 25, 51, 0.55);
+  --bd-overlay-strong:  rgba(1, 25, 51, 0.78);
+}

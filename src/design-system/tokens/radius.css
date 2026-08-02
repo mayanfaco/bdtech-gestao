@@ -1,0 +1,21 @@
+/* ============================================================
+   BDTECH · Radius Tokens
+   Reference uses generously rounded cards + fully-pill CTAs.
+   ============================================================ */
+
+:root {
+  --bd-radius-xs:   4px;
+  --bd-radius-sm:   8px;
+  --bd-radius-md:   12px;
+  --bd-radius-lg:   16px;   /* default card */
+  --bd-radius-xl:   24px;   /* hero / feature cards */
+  --bd-radius-2xl:  32px;   /* large media blocks */
+  --bd-radius-pill: 999px;  /* CTAs, chips, switches */
+  --bd-radius-circle: 50%;
+
+  /* aliases */
+  --bd-radius-card:   var(--bd-radius-lg);
+  --bd-radius-button: var(--bd-radius-pill);
+  --bd-radius-input:  var(--bd-radius-md);
+  --bd-radius-field:  var(--bd-radius-md);
+}

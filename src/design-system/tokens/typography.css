@@ -1,0 +1,53 @@
+/* ============================================================
+   BDTECH · Typography Tokens
+   Display family = NOW (→ Outfit). Text family = TT Norms (→ Hanken Grotesk).
+   Type scale ~1.2 (minor third) tuned for an institutional portal.
+   ============================================================ */
+
+:root {
+  /* ---- Font families (declared in fonts.css) ---- */
+  --bd-font-display: 'NOW', 'Outfit', 'Montserrat', system-ui, sans-serif;
+  --bd-font-text: 'TT Norms', 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --bd-font-mono: ui-monospace, 'SFMono-Regular', monospace;
+
+  /* ---- Weights ---- */
+  --bd-weight-light:    300;
+  --bd-weight-regular:  400;
+  --bd-weight-medium:   500;
+  --bd-weight-semibold: 600;
+  --bd-weight-bold:     700;
+  --bd-weight-extra:    800;
+  --bd-weight-black:    900;
+
+  /* ---- Font sizes (rem, 16px base) ---- */
+  --bd-text-display-xl: 5rem;     /* 80 */
+  --bd-text-display-l:  4rem;     /* 64 */
+  --bd-text-display-m:  3.25rem;  /* 52 */
+  --bd-text-h1:         2.75rem;  /* 44 */
+  --bd-text-h2:         2.25rem;  /* 36 */
+  --bd-text-h3:         1.75rem;  /* 28 */
+  --bd-text-h4:         1.5rem;   /* 24 */
+  --bd-text-h5:         1.25rem;  /* 20 */
+  --bd-text-h6:         1.125rem; /* 18 */
+  --bd-text-subtitle:   1.25rem;  /* 20 */
+  --bd-text-body-lg:    1.125rem; /* 18 */
+  --bd-text-body:       1rem;     /* 16 */
+  --bd-text-body-sm:    0.875rem; /* 14 */
+  --bd-text-caption:    0.75rem;  /* 12 */
+  --bd-text-overline:   0.6875rem;/* 11 */
+  --bd-text-button:     1rem;     /* 16 */
+  --bd-text-label:      0.875rem; /* 14 */
+
+  /* ---- Line heights ---- */
+  --bd-leading-tight:   1.05;  /* display */
+  --bd-leading-snug:    1.15;  /* headings */
+  --bd-leading-normal:  1.5;   /* body */
+  --bd-leading-relaxed: 1.65;  /* long-form */
+
+  /* ---- Letter spacing / tracking ---- */
+  --bd-tracking-tighter: -0.03em;  /* large display */
+  --bd-tracking-tight:   -0.015em; /* headings */
+  --bd-tracking-normal:  0;
+  --bd-tracking-wide:    0.04em;   /* labels */
+  --bd-tracking-wider:   0.12em;   /* overline / eyebrow */
+}

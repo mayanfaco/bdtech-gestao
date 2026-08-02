@@ -1,0 +1,49 @@
+/* ============================================================
+   BDTECH · Effects Tokens
+   Glassmorphism, blur, opacity, motion (durations & easings).
+   ============================================================ */
+
+:root {
+  /* ---- Blur ---- */
+  --bd-blur-sm:  6px;
+  --bd-blur-md:  12px;
+  --bd-blur-lg:  20px;
+  --bd-blur-xl:  32px;
+
+  /* ---- Glassmorphism (light glass — frosted "Imparcial" chip) ----
+     Kept near-imperceptible per brand: a hint of frost, never an effect. */
+  --bd-glass-bg:        rgba(255, 255, 255, 0.10);
+  --bd-glass-border:    rgba(255, 255, 255, 0.22);
+  --bd-glass-highlight: rgba(255, 255, 255, 0.40);
+  --bd-glass-blur:      var(--bd-blur-sm);
+  --bd-glass-shadow:    0 8px 28px rgba(1, 25, 51, 0.18);
+
+  /* ---- Glassmorphism (dark glass — translucent "ART emitida" card) ---- */
+  --bd-glass-dark-bg:     rgba(1, 25, 51, 0.46);
+  --bd-glass-dark-border: rgba(255, 255, 255, 0.10);
+  --bd-glass-dark-blur:   var(--bd-blur-sm);
+
+  /* ---- Opacity scale ---- */
+  --bd-opacity-disabled: 0.45;
+  --bd-opacity-muted:    0.65;
+  --bd-opacity-hover:    0.88;
+  --bd-opacity-overlay:  0.55;
+
+  /* ---- Motion · durations ---- */
+  --bd-duration-instant: 80ms;
+  --bd-duration-fast:    150ms;
+  --bd-duration-base:    240ms;
+  --bd-duration-slow:    360ms;
+  --bd-duration-slower:  560ms;
+
+  /* ---- Motion · easings ---- */
+  --bd-ease-standard: cubic-bezier(0.2, 0, 0, 1);     /* enter/move */
+  --bd-ease-out:      cubic-bezier(0.16, 1, 0.3, 1);  /* decelerate */
+  --bd-ease-in:       cubic-bezier(0.4, 0, 1, 1);     /* accelerate */
+  --bd-ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1); /* gentle overshoot */
+
+  /* ---- Common transitions ---- */
+  --bd-transition-colors: color var(--bd-duration-fast) var(--bd-ease-standard), background-color var(--bd-duration-fast) var(--bd-ease-standard), border-color var(--bd-duration-fast) var(--bd-ease-standard);
+  --bd-transition-transform: transform var(--bd-duration-base) var(--bd-ease-out);
+  --bd-transition-all: all var(--bd-duration-base) var(--bd-ease-standard);
+}

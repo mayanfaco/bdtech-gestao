@@ -1,0 +1,34 @@
+/* ============================================================
+   BDTECH · Gradient Tokens
+   The portal's signature look: navy→azure diagonal fields,
+   bright azure bands, and radial glows behind hero subjects.
+   ============================================================ */
+
+:root {
+  /* Hero / dark institutional field (top-left navy → deep navy) */
+  --bd-gradient-hero: linear-gradient(135deg, #012E5A 0%, #011933 60%, #010F22 100%);
+
+  /* Brand azure field (benefits band) */
+  --bd-gradient-azure: linear-gradient(160deg, #18A6E6 0%, #009FE0 45%, #0081BD 100%);
+
+  /* Diagonal split (navy → azure) used on app-download bands */
+  --bd-gradient-split: linear-gradient(105deg, #011933 0%, #012E5A 50%, #0E86C4 100%);
+
+  /* CTA button (subtle azure depth) */
+  --bd-gradient-cta: linear-gradient(180deg, #00A8EC 0%, #009FE0 50%, #0089C7 100%);
+
+  /* Card sheen — light surface top highlight */
+  --bd-gradient-card: linear-gradient(180deg, #FFFFFF 0%, #F5F8FB 100%);
+
+  /* Step card (azure → navy, like the reference step tiles) */
+  --bd-gradient-step: linear-gradient(180deg, #0E86C4 0%, #014E75 100%);
+
+  /* Radial glow behind hero subject */
+  --bd-gradient-glow: radial-gradient(60% 60% at 50% 40%, rgba(0,159,224,0.45) 0%, rgba(0,159,224,0) 70%);
+
+  /* Image protection scrim (bottom-up) for text over photos */
+  --bd-gradient-scrim: linear-gradient(180deg, rgba(1,25,51,0) 0%, rgba(1,25,51,0.72) 100%);
+
+  /* Overline / divider accent */
+  --bd-gradient-accent-line: linear-gradient(90deg, #009FE0 0%, #3DBDF0 100%);
+}

@@ -1,0 +1,57 @@
+/* ============================================================
+   BDTECH · Spacing & Layout Tokens
+   4px base scale. Container, grid, breakpoints.
+   ============================================================ */
+
+:root {
+  /* ---- Spacing scale (4px base) ---- */
+  --bd-space-0:   0;
+  --bd-space-1:   0.25rem;  /* 4  */
+  --bd-space-2:   0.5rem;   /* 8  */
+  --bd-space-3:   0.75rem;  /* 12 */
+  --bd-space-4:   1rem;     /* 16 */
+  --bd-space-5:   1.25rem;  /* 20 */
+  --bd-space-6:   1.5rem;   /* 24 */
+  --bd-space-8:   2rem;     /* 32 */
+  --bd-space-10:  2.5rem;   /* 40 */
+  --bd-space-12:  3rem;     /* 48 */
+  --bd-space-16:  4rem;     /* 64 */
+  --bd-space-20:  5rem;     /* 80 */
+  --bd-space-24:  6rem;     /* 96 */
+  --bd-space-32:  8rem;     /* 128 */
+
+  /* ---- Container widths ---- */
+  --bd-container-sm:  640px;
+  --bd-container-md:  768px;
+  --bd-container-lg:  1024px;
+  --bd-container-xl:  1280px;
+  --bd-container-max: 1360px;
+
+  /* ---- Section rhythm ---- */
+  --bd-section-y:        var(--bd-space-24);
+  --bd-section-y-tight:  var(--bd-space-16);
+
+  /* ---- Grid ---- */
+  --bd-grid-columns:  12;
+  --bd-grid-gutter:   var(--bd-space-6);   /* 24 desktop */
+  --bd-grid-margin:   var(--bd-space-10);  /* 40 desktop */
+
+  /* ---- Breakpoints (reference values; use in @media) ---- */
+  --bd-bp-sm:  480px;   /* small mobile */
+  --bd-bp-md:  768px;   /* tablet */
+  --bd-bp-lg:  1024px;  /* notebook */
+  --bd-bp-xl:  1280px;  /* desktop */
+  --bd-bp-2xl: 1536px;  /* large desktop */
+
+  /* ---- Z-index scale ---- */
+  --bd-z-base:     0;
+  --bd-z-raised:   10;
+  --bd-z-sticky:   100;
+  --bd-z-nav:      200;
+  --bd-z-drawer:   300;
+  --bd-z-overlay:  400;
+  --bd-z-modal:    500;
+  --bd-z-popover:  600;
+  --bd-z-toast:    700;
+  --bd-z-tooltip:  800;
+}

@@ -1,0 +1,78 @@
+/* ============================================================
+   BDTECH · Fonts
+   ------------------------------------------------------------
+   Licensed commercial typefaces, now bundled under assets/fonts/:
+     • NOW       (Alfatype)  — display / hero / numbers / CTAs
+     • TT Norms  (TypeType)  — body / UI / forms / tables
+   ============================================================ */
+
+@font-face {
+  font-family: 'NOW';
+  src: url('assets/fonts/NOW-Light.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'NOW';
+  src: url('assets/fonts/NOW-Regular.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'NOW';
+  src: url('assets/fonts/NOW-Medium.otf') format('opentype');
+  font-weight: 500 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'NOW';
+  src: url('assets/fonts/NOW-Bold.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'NOW';
+  src: url('assets/fonts/NOW-Black.otf') format('opentype');
+  font-weight: 800 900; font-style: normal; font-display: swap;
+}
+
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-Light.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-Regular.otf') format('opentype');
+  font-weight: 400 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-Italic.otf') format('opentype');
+  font-weight: 400 600; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-Bold.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-BoldItalic.otf') format('opentype');
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-Black.otf') format('opentype');
+  font-weight: 800 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms';
+  src: url('assets/fonts/TTNorms-BlackItalic.otf') format('opentype');
+  font-weight: 800 900; font-style: italic; font-display: swap;
+}
+
+:root {
+  /* Display / brand family (licensed NOW) */
+  --bd-font-display: 'NOW', system-ui, sans-serif;
+  /* Text / UI family (licensed TT Norms) */
+  --bd-font-text: 'TT Norms', system-ui, -apple-system, sans-serif;
+  /* Monospace (numeric tables, code, OTP) */
+  --bd-font-mono: 'SFMono-Regular', ui-monospace, monospace;
+}

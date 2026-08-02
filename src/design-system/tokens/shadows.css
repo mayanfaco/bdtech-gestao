@@ -1,0 +1,32 @@
+/* ============================================================
+   BDTECH · Elevation / Shadow Tokens
+   Soft, cool-tinted shadows (navy base) — matches the floating
+   card / hovering credit-card treatment in the reference.
+   ============================================================ */
+
+:root {
+  --bd-shadow-xs:  0 1px 2px rgba(1, 25, 51, 0.06);
+  --bd-shadow-sm:  0 1px 3px rgba(1, 25, 51, 0.08), 0 1px 2px rgba(1, 25, 51, 0.06);
+  --bd-shadow-md:  0 4px 12px rgba(1, 25, 51, 0.10), 0 2px 4px rgba(1, 25, 51, 0.06);
+  --bd-shadow-lg:  0 12px 28px rgba(1, 25, 51, 0.14), 0 4px 8px rgba(1, 25, 51, 0.08);
+  --bd-shadow-xl:  0 24px 56px rgba(1, 25, 51, 0.20), 0 8px 16px rgba(1, 25, 51, 0.10);
+  --bd-shadow-2xl: 0 40px 80px rgba(1, 25, 51, 0.28);
+
+  /* Inner / pressed */
+  --bd-shadow-inner: inset 0 2px 4px rgba(1, 25, 51, 0.10);
+
+  /* Glow — azure focus / interactive emphasis. Kept quiet: a whisper of
+     emphasis, not a decorative effect — the brand favors near-imperceptible
+     shadows over anything that reads as "glow". */
+  --bd-glow-brand: 0 0 0 4px rgba(0, 159, 224, 0.18);
+  --bd-glow-soft:  0 6px 20px rgba(0, 159, 224, 0.16);
+
+  /* Focus ring (keyboard) */
+  --bd-ring: 0 0 0 3px var(--bd-focus-ring-offset), 0 0 0 5px var(--bd-primary-500);
+
+  /* aliases */
+  --bd-shadow-card:    var(--bd-shadow-md);
+  --bd-shadow-card-hover: var(--bd-shadow-lg);
+  --bd-shadow-popover: var(--bd-shadow-xl);
+  --bd-shadow-modal:   var(--bd-shadow-2xl);
+}

@@ -1,0 +1,92 @@
+/* ============================================================
+   BDTECH · Base layer
+   Element resets, document defaults, and a few brand utilities
+   (mesh background, glass surfaces, container) that the whole
+   system leans on. Tokens come from the imported token files.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--bd-font-text);
+  font-size: var(--bd-text-body);
+  line-height: var(--bd-leading-normal);
+  color: var(--bd-text-body);
+  background: var(--bd-surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings default to the display family */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--bd-font-display);
+  color: var(--bd-text-strong);
+  line-height: var(--bd-leading-snug);
+  letter-spacing: var(--bd-tracking-tight);
+  margin: 0;
+  text-wrap: balance;
+}
+
+p { margin: 0; text-wrap: pretty; }
+
+a { color: var(--bd-text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img, svg { display: block; max-width: 100%; }
+
+:focus-visible {
+  outline: 2px solid var(--bd-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- Type helpers ---- */
+.bd-display-xl { font-family: var(--bd-font-display); font-weight: var(--bd-weight-extra); font-size: var(--bd-text-display-xl); line-height: var(--bd-leading-tight); letter-spacing: var(--bd-tracking-tighter); color: var(--bd-text-strong); }
+.bd-display-l  { font-family: var(--bd-font-display); font-weight: var(--bd-weight-extra); font-size: var(--bd-text-display-l);  line-height: var(--bd-leading-tight); letter-spacing: var(--bd-tracking-tighter); color: var(--bd-text-strong); }
+.bd-display-m  { font-family: var(--bd-font-display); font-weight: var(--bd-weight-bold);  font-size: var(--bd-text-display-m);  line-height: var(--bd-leading-tight); letter-spacing: var(--bd-tracking-tight); color: var(--bd-text-strong); }
+.bd-overline   { font-family: var(--bd-font-text); font-weight: var(--bd-weight-semibold); font-size: var(--bd-text-overline); letter-spacing: var(--bd-tracking-wider); text-transform: uppercase; color: var(--bd-text-link); }
+
+/* ---- Layout ---- */
+.bd-container {
+  width: 100%;
+  max-width: var(--bd-container-max);
+  margin-inline: auto;
+  padding-inline: var(--bd-grid-margin);
+}
+
+/* ---- Technical grid background (signature graphic motif) ----
+   A discreet engineering blueprint grid, not a decorative mesh —
+   the cue reads as "plantas de engenharia", stays quiet on navy. */
+.bd-mesh {
+  background-color: var(--bd-navy-900);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+    radial-gradient(130% 100% at 100% 0%, rgba(0,159,224,0.07) 0%, rgba(0,159,224,0) 60%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+
+/* ---- Glass surfaces ---- */
+.bd-glass {
+  background: var(--bd-glass-bg);
+  border: 1px solid var(--bd-glass-border);
+  -webkit-backdrop-filter: blur(var(--bd-glass-blur));
+  backdrop-filter: blur(var(--bd-glass-blur));
+  box-shadow: var(--bd-glass-shadow);
+  border-radius: var(--bd-radius-lg);
+}
+.bd-glass-dark {
+  background: var(--bd-glass-dark-bg);
+  border: 1px solid var(--bd-glass-dark-border);
+  -webkit-backdrop-filter: blur(var(--bd-glass-dark-blur));
+  backdrop-filter: blur(var(--bd-glass-dark-blur));
+  border-radius: var(--bd-radius-lg);
+  color: var(--bd-text-inverse);
+}
+
+@media (max-width: 768px) {
+  .bd-container { padding-inline: var(--bd-space-5); }
+  :root { --bd-grid-gutter: var(--bd-space-4); --bd-grid-margin: var(--bd-space-5); }
+}
