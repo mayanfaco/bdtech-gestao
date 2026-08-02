@@ -21,7 +21,7 @@ export default function Login() {
     setLoading(true);
     const { error: signInError } = await signIn(email, password);
     setLoading(false);
-    if (signInError) setError('E-mail ou senha inválidos.');
+    if (signInError) setError(`${signInError.message} (status ${signInError.status ?? '?'}, code ${signInError.code ?? '?'})`);
   }
 
   return (
