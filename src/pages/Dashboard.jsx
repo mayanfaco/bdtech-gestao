@@ -81,7 +81,8 @@ export default function Dashboard() {
   const enviadasOuMais = proposals.filter((p) => ['enviada', 'visualizada', 'em_negociacao', 'aprovada', 'recusada'].includes(p.status));
   const aprovadas = proposals.filter((p) => p.status === 'aprovada');
   const taxaConversao = enviadasOuMais.length ? Math.round((aprovadas.length / enviadasOuMais.length) * 100) : 0;
-  const valorProposto = proposals.reduce((sum, p) => sum + (Number(p.valor_total) || Number(p.modelo1_valor_com_desconto) || 0), 0);
+  const emAndamentoOuAprovada = proposals.filter((p) => ['enviada', 'visualizada', 'em_negociacao', 'aprovada'].includes(p.status));
+  const valorProposto = emAndamentoOuAprovada.reduce((sum, p) => sum + (Number(p.valor_total) || Number(p.modelo1_valor_com_desconto) || 0), 0);
   const valorAprovado = aprovadas.reduce((sum, p) => sum + (Number(p.valor_total) || Number(p.modelo1_valor_com_desconto) || 0), 0);
   const ticketMedio = aprovadas.length ? valorAprovado / aprovadas.length : 0;
   const temposFechamento = aprovadas
@@ -155,7 +156,8 @@ export default function Dashboard() {
             hint="inclui as que já avançaram (negociação, aprovada, recusada)"
             to={`/propostas${qs({ status: 'enviada,visualizada,em_negociacao,aprovada,recusada' })}`} />
           <StatCard label="Taxa de conversão" value={`${taxaConversao}%`} hint="aprovadas ÷ enviadas" to={`/propostas${qs()}`} />
-          <StatCard label="Valor total proposto" value={formatCurrency(valorProposto)} to={`/propostas${qs()}`} />
+          <StatCard label="Valor total proposto" value={formatCurrency(valorProposto)} hint="enviada, negociação ou aprovada — exclui rascunhos"
+            to={`/propostas${qs({ status: 'enviada,visualizada,em_negociacao,aprovada' })}`} />
           <StatCard label="Valor total aprovado" value={formatCurrency(valorAprovado)} tone="success" to={`/propostas${qs({ status: 'aprovada' })}`} />
           <StatCard label="Ticket médio" value={formatCurrency(ticketMedio)} to={`/propostas${qs({ status: 'aprovada' })}`} />
         </div>
