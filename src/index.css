@@ -20,4 +20,8 @@ html, body, #root {
 .bd-u-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 900px) {
   .bd-u-grid-2, .bd-u-grid-3, .bd-u-grid-4 { grid-template-columns: 1fr; }
+  /* Page-header rows (title + "Novo X" button) and similar space-between rows
+     wrap instead of squishing/overflowing on narrow screens. Harmless when
+     content already fits on one line — wrap only kicks in on overflow. */
+  .bd-u-flex.bd-u-justify-between { flex-wrap: wrap; row-gap: var(--bd-space-3); }
 }

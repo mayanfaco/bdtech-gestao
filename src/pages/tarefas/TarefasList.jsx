@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
@@ -14,6 +14,10 @@ const PRIORIDADE_TONE = { baixa: 'neutral', media: 'brand', alta: 'warning', urg
 export default function TarefasList() {
   const [tasks, setTasks] = React.useState(null);
   const [statusFilter, setStatusFilter] = React.useState('');
+  const [searchParams] = useSearchParams();
+  const urlVencidas = searchParams.get('vencidas') === '1';
+  const urlPendentes = searchParams.get('pendentes') === '1';
+  const vindoDaDash = urlVencidas || urlPendentes;
 
   React.useEffect(() => {
     supabase.from('tasks').select('*').is('deleted_at', null).order('prazo', { ascending: true, nullsFirst: false })
@@ -21,11 +25,19 @@ export default function TarefasList() {
   }, []);
 
   if (tasks === null) return null;
-  const filtered = statusFilter ? tasks.filter((t) => t.status === statusFilter) : tasks;
   const now = new Date();
+  let filtered = statusFilter ? tasks.filter((t) => t.status === statusFilter) : tasks;
+  if (urlPendentes) filtered = filtered.filter((t) => !['concluida', 'cancelada'].includes(t.status));
+  if (urlVencidas) filtered = filtered.filter((t) => t.prazo && new Date(t.prazo) < now && !['concluida', 'cancelada'].includes(t.status));
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      {vindoDaDash && (
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-3" style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>
+          Filtro vindo do painel executivo · {filtered.length} tarefa(s)
+          <Link to="/tarefas/lista" style={{ color: 'var(--bd-primary-600)' }}>Limpar filtro</Link>
+        </div>
+      )}
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div style={{ maxWidth: 220 }}>
           <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}

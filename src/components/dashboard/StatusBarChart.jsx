@@ -1,5 +1,8 @@
 import React from 'react';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { injectDashboardTechCss } from './dashboardTechCss.js';
+
+injectDashboardTechCss();
 
 /** Gráfico de barras horizontal para contagem por status — cor = tom semântico
     do próprio status (reservado, nunca usado pra "série 4"), sempre com o
@@ -7,7 +10,7 @@ import { Card } from '../../design-system/components/surfaces/Card.jsx';
 export function StatusBarChart({ title, data, toneColor }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
-    <Card padding="lg">
+    <Card padding="lg" className="bd-dash-panel">
       <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, marginBottom: 'var(--bd-space-4)' }}>{title}</h3>
       <div className="bd-u-flex-col bd-u-gap-2">
         {data.map((d) => (

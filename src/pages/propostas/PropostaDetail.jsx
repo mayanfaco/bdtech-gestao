@@ -8,6 +8,8 @@ import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
+import { PropostaFluxo } from '../../components/propostas/PropostaFluxo.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 export default function PropostaDetail() {
   const { id } = useParams();
@@ -36,6 +38,23 @@ export default function PropostaDetail() {
   async function handleRecusar() {
     const motivo = window.prompt('Motivo da recusa (opcional):') ?? '';
     setStatus('recusada', { motivo_recusa: motivo || null });
+  }
+
+  async function handleReverterAprovacao() {
+    const aviso = proposal.converted_at
+      ? 'Esta proposta já tem um contrato gerado a partir dela. Reverter a aprovação não apaga o contrato — só volta o status da proposta para "Em negociação". Continuar?'
+      : 'Reverter a aprovação e voltar a proposta para "Em negociação"?';
+    if (!window.confirm(aviso)) return;
+    setStatus('em_negociacao');
+  }
+
+  async function handleExcluir() {
+    if (!window.confirm('Excluir esta proposta? Ela deixa de aparecer nas listas. Contratos já gerados a partir dela continuam existindo.')) return;
+    setBusy(true);
+    const { error } = await supabase.from('proposals').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    setBusy(false);
+    if (error) { alert(error.message); return; }
+    navigate('/propostas');
   }
 
   async function duplicar() {
@@ -71,6 +90,9 @@ export default function PropostaDetail() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      <div>
+        <BackButton to={client?.nome ? `/clientes/${proposal.client_id}` : '/propostas'} label={client?.nome ? 'Voltar para o cliente' : 'Voltar para Propostas'} />
+      </div>
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div>
           <h1 style={{ fontSize: 24 }}>{proposalNumberLabel(proposal)}</h1>
@@ -82,8 +104,11 @@ export default function PropostaDetail() {
           <Button variant="outline" as={Link} to={`/propostas/${id}/pdf`}>Imprimir / PDF</Button>
           <Button variant="outline" onClick={duplicar} loading={busy}>Duplicar</Button>
           <Button variant="outline" as={Link} to={`/propostas/${id}/editar`}>Editar</Button>
+          <Button variant="ghost" onClick={handleExcluir} loading={busy} style={{ color: 'var(--bd-danger-500)' }}>Excluir</Button>
         </div>
       </div>
+
+      <PropostaFluxo proposalId={id} currentStatus={proposal.status} refreshKey={refreshKey} />
 
       {isExpired && <Alert tone="danger" title="Proposta vencida">A validade desta proposta já passou.</Alert>}
       {isExpiringSoon && <Alert tone="warning" title="Proposta vencendo">A validade termina em breve ({proposal.data_validade}).</Alert>}
@@ -108,7 +133,10 @@ export default function PropostaDetail() {
           <Button size="sm" variant="ghost" onClick={() => setStatus('cancelada')} loading={busy}>Cancelar</Button>
         )}
         {proposal.status === 'aprovada' && (
-          <Button size="sm" as={Link} to={`/contratos/novo?propostaId=${id}&clienteId=${proposal.client_id ?? ''}`}>Converter em contrato</Button>
+          <>
+            <Button size="sm" as={Link} to={`/contratos/novo?propostaId=${id}&clienteId=${proposal.client_id ?? ''}`}>Converter em contrato</Button>
+            <Button size="sm" variant="ghost" onClick={handleReverterAprovacao} loading={busy}>Reverter aprovação</Button>
+          </>
         )}
       </div>
 
@@ -129,20 +157,22 @@ export default function PropostaDetail() {
       {proposal.tipo_precificacao === 'modelo_fixo' && (
         <div className="bd-u-grid-2 bd-u-gap-4">
           <Card padding="lg">
-            <strong>Modelo 1 — Serviço Técnico Pontual</strong>
-            <div style={{ marginTop: 8 }}>Valor: {formatCurrency(m1.valorTotal)}</div>
+            <strong>MODELO 1 — SERVIÇO TÉCNICO PONTUAL</strong>
+            <div style={{ marginTop: 8 }}>Valor total: {formatCurrency(m1.valorTotal)}</div>
             <div style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>
-              Entrada {proposal.modelo1_entrada_percentual}% ({formatCurrency(m1.entradaValor)}) · Restante {m1.restantePercentual}% na entrega do laudo
+              {Number(proposal.modelo1_parcelas_restante) > 1
+                ? `Entrada ${proposal.modelo1_entrada_percentual}% (${formatCurrency(m1.entradaValor)}) · restante em ${proposal.modelo1_parcelas_restante}x de ${formatCurrency(m1.valorParcela)}`
+                : `Entrada ${proposal.modelo1_entrada_percentual}% (${formatCurrency(m1.entradaValor)}) · restante ${m1.restantePercentual}% na entrega do laudo`}
             </div>
           </Card>
           <Card padding="lg">
-            <strong>Modelo 2 — Serviço Técnico Continuado</strong>
-            <div style={{ marginTop: 8 }}>Mensal: {formatCurrency(m2.valorMensal)} · Anual: {formatCurrency(m2.valorAnual)}</div>
-            {m2.valorParcela != null && (
-              <div style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>
-                {proposal.modelo2_parcelas_restante}x {formatCurrency(m2.valorParcela)}
-              </div>
-            )}
+            <strong>MODELO 2 — SERVIÇO TÉCNICO CONTINUADO</strong>
+            <div style={{ marginTop: 8 }}>Valor total do contrato: {formatCurrency(m2.valorAnual)}</div>
+            <div style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>
+              {Number(proposal.modelo2_entrada_percentual) > 0
+                ? `Entrada ${proposal.modelo2_entrada_percentual}% (${formatCurrency(m2.entradaValor)}) · restante em ${proposal.modelo2_parcelas_restante}x de ${formatCurrency(m2.valorParcela)}`
+                : `Parcelado em ${proposal.modelo2_parcelas_restante}x de ${formatCurrency(m2.valorParcela)}`}
+            </div>
           </Card>
         </div>
       )}

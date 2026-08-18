@@ -5,6 +5,7 @@ import { googleCalendarLink } from '../../lib/googleCalendarLink.js';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const TIPO_LABEL = {
   reuniao_comercial: 'Reunião comercial', reuniao_tecnica: 'Reunião técnica', apresentacao_proposta: 'Apresentação de proposta',
@@ -36,6 +37,9 @@ export default function EventoDetail() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      <div>
+        <BackButton to="/calendario" label="Voltar para Calendário" />
+      </div>
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div>
           <h1 style={{ fontSize: 24 }}>{event.titulo}</h1>

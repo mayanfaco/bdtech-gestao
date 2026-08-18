@@ -3,8 +3,6 @@
 // (não um data router criado via createBrowserRouter), e useMatches só funciona
 // com data router.
 const TITLES = [
-  { prefix: '/leads', title: 'Leads' },
-  { prefix: '/oportunidades', title: 'Oportunidades' },
   { prefix: '/clientes', title: 'Clientes' },
   { prefix: '/propostas', title: 'Propostas' },
   { prefix: '/contratos', title: 'Contratos' },

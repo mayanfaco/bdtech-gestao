@@ -8,6 +8,7 @@ import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 export default function ContratoDetail() {
   const { id } = useParams();
@@ -73,6 +74,9 @@ export default function ContratoDetail() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      <div>
+        <BackButton to={contract.client_id ? `/clientes/${contract.client_id}` : '/contratos'} label={contract.client_id ? 'Voltar para o cliente' : 'Voltar para Contratos'} />
+      </div>
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div>
           <h1 style={{ fontSize: 24 }}>CONT-{contract.data_inicio ? new Date(contract.data_inicio).getFullYear() : ''}-{String(contract.numero).padStart(4, '0')}</h1>

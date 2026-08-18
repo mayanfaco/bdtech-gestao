@@ -9,6 +9,7 @@ import { Checkbox } from '../../design-system/components/forms/Checkbox.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const TIPO_OPTIONS = [
   { value: 'reuniao_comercial', label: 'Reunião comercial' },
@@ -41,7 +42,7 @@ export default function EventoForm() {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   const staffOptions = useStaffOptions();
-  const [form, setForm] = React.useState(EMPTY);
+  const [form, setForm] = React.useState({ ...EMPTY, data_inicio: searchParams.get('data') ?? '' });
   const [loading, setLoading] = React.useState(isEdit);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -88,7 +89,9 @@ export default function EventoForm() {
   if (loading) return null;
 
   return (
-    <Card padding="lg" style={{ maxWidth: 600 }}>
+    <div className="bd-u-flex-col bd-u-gap-3" style={{ maxWidth: 600 }}>
+      <BackButton to={isEdit ? `/calendario/${id}` : '/calendario'} label={isEdit ? 'Voltar para o evento' : 'Voltar para Calendário'} />
+      <Card padding="lg">
       <form onSubmit={handleSubmit} className="bd-u-flex-col bd-u-gap-4">
         <Input label="Título" required value={form.titulo} onChange={set('titulo')} />
         <Select label="Tipo" value={form.tipo} onChange={set('tipo')} options={TIPO_OPTIONS} />
@@ -120,6 +123,7 @@ export default function EventoForm() {
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
         </div>
       </form>
-    </Card>
+      </Card>
+    </div>
   );
 }

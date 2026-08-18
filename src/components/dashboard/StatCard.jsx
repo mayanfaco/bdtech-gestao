@@ -1,12 +1,42 @@
 import React from 'react';
-import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { Link } from 'react-router-dom';
+import { injectDashboardTechCss } from './dashboardTechCss.js';
 
-export function StatCard({ label, value, hint, tone }) {
+injectDashboardTechCss();
+
+const TONE_COLOR = { success: '#3DD68C', danger: '#FF6A70' };
+
+export function StatCard({ label, value, hint, tone, to }) {
+  const ref = React.useRef(null);
+
+  function handleMouseMove(e) {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+    el.style.setProperty('--my', `${e.clientY - rect.top}px`);
+  }
+
+  const content = (
+    <>
+      <div className="bd-dash-stat__spotlight" />
+      <div className="bd-dash-stat__label">{label}</div>
+      <div className="bd-dash-stat__value" style={tone ? { color: TONE_COLOR[tone] } : undefined}>{value}</div>
+      {hint && <div className="bd-dash-stat__hint">{hint}</div>}
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to} className="bd-dash-stat bd-dash-stat--clickable" ref={ref} onMouseMove={handleMouseMove}>
+        {content}
+      </Link>
+    );
+  }
+
   return (
-    <Card padding="lg">
-      <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--bd-text-muted)' }}>{label}</div>
-      <div style={{ fontFamily: 'var(--bd-font-display)', fontWeight: 800, fontSize: 30, color: tone ?? 'var(--bd-navy-900)', marginTop: 6, lineHeight: 1 }}>{value}</div>
-      {hint && <div style={{ fontSize: 12, color: 'var(--bd-text-subtle)', marginTop: 6 }}>{hint}</div>}
-    </Card>
+    <div className="bd-dash-stat" ref={ref} onMouseMove={handleMouseMove}>
+      {content}
+    </div>
   );
 }

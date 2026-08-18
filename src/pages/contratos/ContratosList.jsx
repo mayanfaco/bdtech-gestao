@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { CONTRACT_STATUS_LABEL, CONTRACT_STATUS_TONE } from '../../lib/statusLabels.js';
 import { formatCurrency } from '../../lib/proposalCalculations.js';
@@ -9,9 +9,19 @@ import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 
+function diasParaVencer(iso) {
+  return iso ? Math.ceil((new Date(iso) - new Date()) / 86400000) : null;
+}
+
 export default function ContratosList() {
   const [contracts, setContracts] = React.useState(null);
   const [statusFilter, setStatusFilter] = React.useState('');
+  const [searchParams] = useSearchParams();
+
+  const urlStatuses = (searchParams.get('status') || '').split(',').filter(Boolean);
+  const urlVencendo = searchParams.get('vencendo');
+  const urlResponsavel = searchParams.get('responsavel');
+  const vindoDaDash = urlStatuses.length > 0 || urlVencendo || urlResponsavel;
 
   React.useEffect(() => {
     supabase.from('contracts').select('*, clients(nome)').is('deleted_at', null).order('created_at', { ascending: false })
@@ -19,10 +29,27 @@ export default function ContratosList() {
   }, []);
 
   if (contracts === null) return null;
-  const filtered = statusFilter ? contracts.filter((c) => c.status === statusFilter) : contracts;
+
+  let filtered = contracts;
+  if (statusFilter) filtered = filtered.filter((c) => c.status === statusFilter);
+  else if (urlStatuses.length) filtered = filtered.filter((c) => urlStatuses.includes(c.status));
+  if (urlVencendo) {
+    const dias = Number(urlVencendo);
+    filtered = filtered.filter((c) => {
+      const d = diasParaVencer(c.data_termino);
+      return ['ativo', 'assinado', 'proximo_vencimento'].includes(c.status) && d != null && d >= 0 && d <= dias;
+    });
+  }
+  if (urlResponsavel) filtered = filtered.filter((c) => c.responsavel_user_id === urlResponsavel);
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      {vindoDaDash && (
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-3" style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>
+          Filtro vindo do painel executivo · {filtered.length} contrato(s)
+          <Link to="/contratos" style={{ color: 'var(--bd-primary-600)' }}>Limpar filtro</Link>
+        </div>
+      )}
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div style={{ maxWidth: 240 }}>
           <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}

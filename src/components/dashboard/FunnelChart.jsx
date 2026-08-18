@@ -1,5 +1,8 @@
 import React from 'react';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { injectDashboardTechCss } from './dashboardTechCss.js';
+
+injectDashboardTechCss();
 
 // Rampa sequencial validada (node scripts/validate_palette.js --ordinal): um
 // hue só, do mais claro ao mais escuro — todas as checagens da skill de
@@ -10,7 +13,7 @@ const RAMP = ['#2EB2E8', '#0081BD', '#014E75', '#011933'];
 export function FunnelChart({ stages }) {
   const max = Math.max(1, ...stages.map((s) => s.value));
   return (
-    <Card padding="lg">
+    <Card padding="lg" className="bd-dash-panel">
       <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, marginBottom: 'var(--bd-space-4)' }}>Funil comercial</h3>
       <div className="bd-u-flex-col bd-u-gap-3">
         {stages.map((s, i) => (

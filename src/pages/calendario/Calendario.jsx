@@ -1,11 +1,37 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { monthGrid, monthLabel, weekdayLabels, isSameDay, isSameMonth } from '../../lib/dateUtils.js';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+
+const CSS = `
+.bd-cal-day{position:relative;background:var(--bd-surface-card);min-height:96px;padding:6px;
+  cursor:pointer;transition:background var(--bd-duration-fast) var(--bd-ease-standard);}
+.bd-cal-day:hover{background:var(--bd-primary-50);}
+.bd-cal-day--today{background:var(--bd-primary-50);}
+.bd-cal-day__add{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+  background:var(--bd-primary-500);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;line-height:1;opacity:0;transform:scale(.7);
+  transition:opacity var(--bd-duration-fast),transform var(--bd-duration-fast);pointer-events:none;}
+.bd-cal-day:hover .bd-cal-day__add{opacity:1;transform:scale(1);}
+.bd-cal-day__event{text-decoration:none;}
+.bd-cal-day__event > div{transition:filter var(--bd-duration-fast);}
+.bd-cal-day__event:hover > div{filter:brightness(1.12);}
+`;
+if (typeof document !== 'undefined' && !document.getElementById('bd-calendario-css')) {
+  const s = document.createElement('style'); s.id = 'bd-calendario-css'; s.textContent = CSS;
+  document.head.appendChild(s);
+}
+
+function isoLocal(day, hour = '09:00') {
+  const y = day.getFullYear();
+  const m = String(day.getMonth() + 1).padStart(2, '0');
+  const d = String(day.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hour}`;
+}
 
 const TIPO_LABEL = {
   reuniao_comercial: 'Reunião comercial', reuniao_tecnica: 'Reunião técnica', apresentacao_proposta: 'Apresentação de proposta',
@@ -21,6 +47,7 @@ const TIPO_COLOR = {
 };
 
 export default function Calendario() {
+  const navigate = useNavigate();
   const [view, setView] = React.useState('mes');
   const [cursor, setCursor] = React.useState(new Date());
   const [tipoFilter, setTipoFilter] = React.useState('');
@@ -61,23 +88,27 @@ export default function Calendario() {
             <strong style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16 }}>{monthLabel(cursor)}</strong>
             <Button variant="ghost" size="sm" onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + 1, 1))}>Próximo →</Button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, background: 'var(--bd-border-subtle)', border: '1px solid var(--bd-border-subtle)', borderRadius: 'var(--bd-radius-md)', overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, minWidth: 700, background: 'var(--bd-border-subtle)', border: '1px solid var(--bd-border-subtle)', borderRadius: 'var(--bd-radius-md)', overflow: 'hidden' }}>
             {weekdayLabels().map((d) => (
               <div key={d} style={{ background: 'var(--bd-navy-900)', color: '#fff', padding: '8px 6px', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{d}</div>
             ))}
             {days.map((day, i) => {
               const dayEvents = eventsOn(day);
+              const isToday = isSameDay(day, today);
               return (
-                <div key={i} style={{
-                  background: 'var(--bd-surface-card)', minHeight: 96, padding: 6,
-                  opacity: isSameMonth(day, cursor) ? 1 : 0.4,
-                }}>
+                <div key={i} className={`bd-cal-day${isToday ? ' bd-cal-day--today' : ''}`}
+                  title="Clique para criar um evento neste dia"
+                  style={{ opacity: isSameMonth(day, cursor) ? 1 : 0.4 }}
+                  onClick={() => navigate(`/calendario/novo?data=${isoLocal(day)}`)}
+                >
+                  <span className="bd-cal-day__add">+</span>
                   <div style={{
-                    fontSize: 12, fontWeight: isSameDay(day, today) ? 800 : 500,
-                    color: isSameDay(day, today) ? 'var(--bd-primary-600)' : 'var(--bd-text-muted)', marginBottom: 4,
+                    fontSize: 12, fontWeight: isToday ? 800 : 500,
+                    color: isToday ? 'var(--bd-primary-600)' : 'var(--bd-text-muted)', marginBottom: 4,
                   }}>{day.getDate()}</div>
                   {dayEvents.slice(0, 3).map((ev) => (
-                    <Link key={ev.id} to={`/calendario/${ev.id}`} style={{ textDecoration: 'none' }}>
+                    <Link key={ev.id} to={`/calendario/${ev.id}`} className="bd-cal-day__event" onClick={(e) => e.stopPropagation()}>
                       <div style={{
                         fontSize: 11, padding: '2px 6px', borderRadius: 4, marginBottom: 2, color: '#fff',
                         background: TIPO_COLOR[ev.tipo], overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -88,6 +119,7 @@ export default function Calendario() {
                 </div>
               );
             })}
+          </div>
           </div>
         </>
       ) : (

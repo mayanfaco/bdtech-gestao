@@ -8,6 +8,7 @@ import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const LINK_FIELDS = ['leadId', 'opportunityId', 'clientId', 'proposalId', 'contractId', 'calendarEventId'];
 const LINK_COLUMN = {
@@ -65,7 +66,9 @@ export default function TarefaForm() {
   if (loading) return null;
 
   return (
-    <Card padding="lg" style={{ maxWidth: 560 }}>
+    <div className="bd-u-flex-col bd-u-gap-3" style={{ maxWidth: 560 }}>
+      <BackButton to={isEdit ? `/tarefas/${id}` : '/tarefas'} label={isEdit ? 'Voltar para a tarefa' : 'Voltar para Tarefas'} />
+      <Card padding="lg">
       <form onSubmit={handleSubmit} className="bd-u-flex-col bd-u-gap-4">
         <Input label="Título" required value={form.titulo} onChange={set('titulo')} />
         <Textarea label="Descrição" rows={3} value={form.descricao} onChange={set('descricao')} />
@@ -89,6 +92,7 @@ export default function TarefaForm() {
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
         </div>
       </form>
-    </Card>
+      </Card>
+    </div>
   );
 }

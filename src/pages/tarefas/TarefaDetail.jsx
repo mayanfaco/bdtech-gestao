@@ -6,6 +6,7 @@ import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import { Checkbox } from '../../design-system/components/forms/Checkbox.jsx';
 import { Input } from '../../design-system/components/forms/Input.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const STATUS_LABEL = { pendente: 'Pendente', em_andamento: 'Em andamento', aguardando_terceiros: 'Aguardando terceiros', concluida: 'Concluída', cancelada: 'Cancelada' };
 
@@ -56,6 +57,9 @@ export default function TarefaDetail() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
+      <div>
+        <BackButton to={task.client_id ? `/clientes/${task.client_id}` : '/tarefas'} label={task.client_id ? 'Voltar para o cliente' : 'Voltar para Tarefas'} />
+      </div>
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
         <div>
           <h1 style={{ fontSize: 24 }}>{task.titulo}</h1>

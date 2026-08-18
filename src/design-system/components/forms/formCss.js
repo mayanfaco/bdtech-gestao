@@ -30,6 +30,11 @@ textarea.bdctrl{min-height:120px;resize:vertical;line-height:var(--bd-leading-no
   border-right:2px solid var(--bd-text-muted);border-bottom:2px solid var(--bd-text-muted);
   transform:translateY(-65%) rotate(45deg);pointer-events:none;}
 select.bdctrl{appearance:none;padding-right:40px;cursor:pointer;}
+/* O menu suspenso do <select> é sempre desenhado pelo navegador com fundo
+   claro, mesmo quando o campo em si herda cor de texto branca (ex.: filtros
+   da dashboard sobre fundo escuro) — sem isto o texto das opções ficava
+   ilegível (branco sobre branco) exceto na opção em hover/selecionada. */
+select.bdctrl option{color:var(--bd-navy-900);background:#fff;}
 
 /* checkbox + radio */
 .bdcheck{display:inline-flex;align-items:flex-start;gap:10px;cursor:pointer;font-family:var(--bd-font-text);color:var(--bd-text-body);font-size:var(--bd-text-body);}

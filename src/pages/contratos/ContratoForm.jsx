@@ -8,13 +8,22 @@ import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
-import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { ContratoDocumentPreview } from '../../components/contratos/ContratoDocumentPreview.jsx';
+import { injectDocumentEditorLayoutCss } from '../../components/documentEditorLayoutCss.js';
+import { BackButton } from '../../components/BackButton.jsx';
+import '../../print.css';
+
+injectDocumentEditorLayoutCss();
+
+const hoje = new Date();
+const DATA_INICIO_PADRAO = hoje.toISOString().slice(0, 10);
+const DATA_TERMINO_PADRAO = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate()).toISOString().slice(0, 10);
 
 const EMPTY = {
   client_id: '', proposal_id: '', modelo: 'modelo1',
   contratante_nome: '', contratante_cnpj: '', contratante_endereco: '', contratante_sindico_nome: '', contratante_sindico_cpf: '',
   contratada_razao_social: '', contratada_cnpj: '', contratada_endereco: '', contratada_representante: '', contratada_cpf: '',
-  escopo_servico: '', data_inicio: '', data_termino: '',
+  escopo_servico: '', data_inicio: DATA_INICIO_PADRAO, data_termino: DATA_TERMINO_PADRAO,
   valor_total: '', valor_total_extenso: '',
   parcela1_valor: '', parcela1_data: '', parcela2_valor: '', parcela2_data: '',
   parcelas_mensais_valor: '', parcelas_mensais_inicio: '',
@@ -161,10 +170,13 @@ export default function ContratoForm() {
   if (loading) return null;
 
   return (
-    <Card padding="lg" style={{ maxWidth: 760 }}>
-      <form onSubmit={handleSubmit} className="bd-u-flex-col bd-u-gap-4">
+    <div className="bd-u-flex-col bd-u-gap-3">
+      <BackButton to={isEdit ? `/contratos/${id}` : '/contratos'} label={isEdit ? 'Voltar para o contrato' : 'Voltar para Contratos'} />
+      <div className="bd-doc-editor">
+      <form onSubmit={handleSubmit} className="bd-doc-editor__form">
+      <div className="bd-doc-editor__form-scroll bd-u-flex-col bd-u-gap-4">
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16 }}>Contratante — Condomínio</h3>
-        <Select label="Cliente" value={form.client_id} onChange={set('client_id')} placeholder="Selecione..." options={clients.map((c) => ({ value: c.id, label: c.nome }))} />
+        <Select label="Cliente" required value={form.client_id} onChange={set('client_id')} placeholder="Selecione..." options={clients.map((c) => ({ value: c.id, label: c.nome }))} />
         <Input label="Nome do condomínio" required value={form.contratante_nome} onChange={set('contratante_nome')} />
         <div className="bd-u-grid-2 bd-u-gap-4">
           <Input label="CNPJ" value={form.contratante_cnpj} onChange={set('contratante_cnpj')} />
@@ -176,28 +188,28 @@ export default function ContratoForm() {
         </div>
 
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Contratada — BDTECH</h3>
-        <Input label="Razão social" value={form.contratada_razao_social} onChange={set('contratada_razao_social')} />
+        <Input label="Razão social" required value={form.contratada_razao_social} onChange={set('contratada_razao_social')} />
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="CNPJ" value={form.contratada_cnpj} onChange={set('contratada_cnpj')} />
-          <Input label="Endereço completo" value={form.contratada_endereco} onChange={set('contratada_endereco')} />
+          <Input label="CNPJ" required value={form.contratada_cnpj} onChange={set('contratada_cnpj')} />
+          <Input label="Endereço completo" required value={form.contratada_endereco} onChange={set('contratada_endereco')} />
         </div>
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Representante legal" value={form.contratada_representante} onChange={set('contratada_representante')} />
-          <Input label="CPF do representante" value={form.contratada_cpf} onChange={set('contratada_cpf')} />
+          <Input label="Representante legal" required value={form.contratada_representante} onChange={set('contratada_representante')} />
+          <Input label="CPF do representante" required value={form.contratada_cpf} onChange={set('contratada_cpf')} />
         </div>
 
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Objeto e prazo</h3>
         <Select label="Modelo" value={form.modelo} onChange={set('modelo')}
           options={[{ value: 'modelo1', label: 'Modelo 1 — Serviço Técnico Pontual' }, { value: 'modelo2', label: 'Modelo 2 — Serviço Técnico Continuado' }]} />
-        <Textarea label="Escopo do serviço" rows={2} value={form.escopo_servico} onChange={set('escopo_servico')} />
+        <Textarea label="Escopo do serviço" rows={2} required value={form.escopo_servico} onChange={set('escopo_servico')} />
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Data de início" type="date" value={form.data_inicio} onChange={set('data_inicio')} />
-          <Input label="Data de término" type="date" value={form.data_termino} onChange={set('data_termino')} />
+          <Input label="Data de início" type="date" required value={form.data_inicio} onChange={set('data_inicio')} />
+          <Input label="Data de término" type="date" required value={form.data_termino} onChange={set('data_termino')} />
         </div>
 
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Pagamento</h3>
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Valor total (R$)" type="number" step="0.01" value={form.valor_total} onChange={handleValorChange} />
+          <Input label="Valor total (R$)" type="number" step="0.01" required value={form.valor_total} onChange={handleValorChange} />
           <Input label="Valor total por extenso" value={form.valor_total_extenso}
             onChange={(e) => { setExtensoTocado(true); setForm((f) => ({ ...f, valor_total_extenso: e.target.value })); }} />
         </div>
@@ -225,11 +237,17 @@ export default function ContratoForm() {
         </div>
 
         {error && <Alert tone="danger">{error}</Alert>}
-        <div className="bd-u-flex bd-u-gap-3">
-          <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar como rascunho'}</Button>
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
-        </div>
+      </div>
+      <div className="bd-doc-editor__form-footer">
+        <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar contrato'}</Button>
+        <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
+      </div>
       </form>
-    </Card>
+
+      <div className="bd-doc-editor__preview">
+        <ContratoDocumentPreview contract={form} />
+      </div>
+      </div>
+    </div>
   );
 }

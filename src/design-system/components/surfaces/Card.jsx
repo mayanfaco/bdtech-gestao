@@ -46,19 +46,16 @@ export function Card({
     padding === 'lg' ? 'bdcard__pad-lg' : '',
     className,
   ].filter(Boolean).join(' ');
-  const hasConvenience = eyebrow || title || text || footer;
   return (
     <div className={cls} {...rest}>
       {media && <img className="bdcard__media" src={media} alt={mediaAlt} />}
-      {hasConvenience ? (
-        <div className="bdcard__body">
-          {eyebrow && <div className="bdcard__eyebrow">{eyebrow}</div>}
-          {title && <h3 className="bdcard__title">{title}</h3>}
-          {text && <p className="bdcard__text">{text}</p>}
-          {children}
-          {footer && <div style={{ marginTop: 'var(--bd-space-5)' }}>{footer}</div>}
-        </div>
-      ) : children}
+      <div className="bdcard__body">
+        {eyebrow && <div className="bdcard__eyebrow">{eyebrow}</div>}
+        {title && <h3 className="bdcard__title">{title}</h3>}
+        {text && <p className="bdcard__text">{text}</p>}
+        {children}
+        {footer && <div style={{ marginTop: 'var(--bd-space-5)' }}>{footer}</div>}
+      </div>
     </div>
   );
 }

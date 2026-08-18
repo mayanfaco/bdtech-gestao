@@ -1,25 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, ProtectedRoute } from './lib/auth.jsx';
 import { AppShell } from './components/layout/AppShell.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
-import LeadsList from './pages/crm/LeadsList.jsx';
-import LeadForm from './pages/crm/LeadForm.jsx';
-import LeadDetail from './pages/crm/LeadDetail.jsx';
-import OportunidadesKanban from './pages/crm/OportunidadesKanban.jsx';
-import OportunidadesList from './pages/crm/OportunidadesList.jsx';
-import OportunidadeForm from './pages/crm/OportunidadeForm.jsx';
-import OportunidadeDetail from './pages/crm/OportunidadeDetail.jsx';
 import PropostasList from './pages/propostas/PropostasList.jsx';
 import PropostaForm from './pages/propostas/PropostaForm.jsx';
 import PropostaDetail from './pages/propostas/PropostaDetail.jsx';
-import PropostaVersoes from './pages/propostas/PropostaVersoes.jsx';
 import PropostaPrint from './pages/propostas/PropostaPrint.jsx';
 import ContratosList from './pages/contratos/ContratosList.jsx';
 import ContratoForm from './pages/contratos/ContratoForm.jsx';
 import ContratoDetail from './pages/contratos/ContratoDetail.jsx';
-import ContratoAssinatura from './pages/contratos/ContratoAssinatura.jsx';
 import ContratoPrint from './pages/contratos/ContratoPrint.jsx';
 import ClientesList from './pages/clientes/ClientesList.jsx';
 import ClienteForm from './pages/clientes/ClienteForm.jsx';
@@ -29,24 +21,31 @@ import Calendario from './pages/calendario/Calendario.jsx';
 import EventoForm from './pages/calendario/EventoForm.jsx';
 import EventoDetail from './pages/calendario/EventoDetail.jsx';
 import TarefasList from './pages/tarefas/TarefasList.jsx';
+import TarefasKanban from './pages/tarefas/TarefasKanban.jsx';
 import TarefaForm from './pages/tarefas/TarefaForm.jsx';
 import TarefaDetail from './pages/tarefas/TarefaDetail.jsx';
-import Configuracoes from './pages/configuracoes/Configuracoes.jsx';
-import GoogleCalendarConfig from './pages/configuracoes/GoogleCalendarConfig.jsx';
-import ConfiguracoesEmpresa from './pages/configuracoes/ConfiguracoesEmpresa.jsx';
-import UsuariosList from './pages/configuracoes/UsuariosList.jsx';
-import PerfisPermissoes from './pages/configuracoes/PerfisPermissoes.jsx';
-import PipelineStagesConfig from './pages/configuracoes/PipelineStagesConfig.jsx';
-import AutomacoesConfig from './pages/configuracoes/AutomacoesConfig.jsx';
-import AssinaturaConfig from './pages/configuracoes/AssinaturaConfig.jsx';
-import DadosDemoConfig from './pages/configuracoes/DadosDemoConfig.jsx';
-import BuscaResultados from './pages/busca/BuscaResultados.jsx';
-import NotificacoesCentro from './pages/notificacoes/NotificacoesCentro.jsx';
+
+// Carregadas sob demanda: seções acessadas com pouca frequência (histórico
+// de versão, assinatura, configurações administrativas, busca, notificações)
+// não precisam entrar no bundle inicial de todo mundo.
+const PropostaVersoes = lazy(() => import('./pages/propostas/PropostaVersoes.jsx'));
+const ContratoAssinatura = lazy(() => import('./pages/contratos/ContratoAssinatura.jsx'));
+const Configuracoes = lazy(() => import('./pages/configuracoes/Configuracoes.jsx'));
+const GoogleCalendarConfig = lazy(() => import('./pages/configuracoes/GoogleCalendarConfig.jsx'));
+const ConfiguracoesEmpresa = lazy(() => import('./pages/configuracoes/ConfiguracoesEmpresa.jsx'));
+const UsuariosList = lazy(() => import('./pages/configuracoes/UsuariosList.jsx'));
+const PerfisPermissoes = lazy(() => import('./pages/configuracoes/PerfisPermissoes.jsx'));
+const AutomacoesConfig = lazy(() => import('./pages/configuracoes/AutomacoesConfig.jsx'));
+const AssinaturaConfig = lazy(() => import('./pages/configuracoes/AssinaturaConfig.jsx'));
+const DadosDemoConfig = lazy(() => import('./pages/configuracoes/DadosDemoConfig.jsx'));
+const BuscaResultados = lazy(() => import('./pages/busca/BuscaResultados.jsx'));
+const NotificacoesCentro = lazy(() => import('./pages/notificacoes/NotificacoesCentro.jsx'));
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/login" element={<Login />} />
 
@@ -64,17 +63,6 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-
-            <Route path="leads" element={<LeadsList />} />
-            <Route path="leads/novo" element={<LeadForm />} />
-            <Route path="leads/:id" element={<LeadDetail />} />
-            <Route path="leads/:id/editar" element={<LeadForm />} />
-
-            <Route path="oportunidades" element={<OportunidadesKanban />} />
-            <Route path="oportunidades/lista" element={<OportunidadesList />} />
-            <Route path="oportunidades/nova" element={<OportunidadeForm />} />
-            <Route path="oportunidades/:id" element={<OportunidadeDetail />} />
-            <Route path="oportunidades/:id/editar" element={<OportunidadeForm />} />
 
             <Route path="clientes" element={<ClientesList />} />
             <Route path="clientes/novo" element={<ClienteForm />} />
@@ -100,7 +88,8 @@ function App() {
             <Route path="calendario/:id" element={<EventoDetail />} />
             <Route path="calendario/:id/editar" element={<EventoForm />} />
 
-            <Route path="tarefas" element={<TarefasList />} />
+            <Route path="tarefas" element={<TarefasKanban />} />
+            <Route path="tarefas/lista" element={<TarefasList />} />
             <Route path="tarefas/nova" element={<TarefaForm />} />
             <Route path="tarefas/:id" element={<TarefaDetail />} />
             <Route path="tarefas/:id/editar" element={<TarefaForm />} />
@@ -109,7 +98,6 @@ function App() {
             <Route path="configuracoes/empresa" element={<ConfiguracoesEmpresa />} />
             <Route path="configuracoes/usuarios" element={<UsuariosList />} />
             <Route path="configuracoes/perfis-acesso" element={<PerfisPermissoes />} />
-            <Route path="configuracoes/pipeline" element={<PipelineStagesConfig />} />
             <Route path="configuracoes/automacoes" element={<AutomacoesConfig />} />
             <Route path="configuracoes/integracoes/google-calendar" element={<GoogleCalendarConfig />} />
             <Route path="configuracoes/integracoes/assinatura" element={<AssinaturaConfig />} />
@@ -119,6 +107,7 @@ function App() {
             <Route path="notificacoes" element={<NotificacoesCentro />} />
           </Route>
         </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );

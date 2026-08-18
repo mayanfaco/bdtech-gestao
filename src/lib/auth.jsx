@@ -7,7 +7,7 @@ const AuthContext = React.createContext(null);
 async function fetchProfile(userId) {
   const { data } = await supabase
     .from('user_profiles')
-    .select('id, display_name, active, roles(key, label)')
+    .select('id, display_name, active, role_id, roles(key, label)')
     .eq('id', userId)
     .maybeSingle();
   if (!data) return null;

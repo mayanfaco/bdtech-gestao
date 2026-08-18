@@ -1,5 +1,8 @@
 import React from 'react';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { injectDashboardTechCss } from './dashboardTechCss.js';
+
+injectDashboardTechCss();
 
 // Par categórico validado (node scripts/validate_palette.js): mesmo hue da
 // marca em duas luminosidades distintas — passou luminosidade/croma/CVD.
@@ -10,7 +13,7 @@ const SERIES_COLOR = { propostas: '#2EB2E8', contratos: '#006699' };
 export function MonthlyTrendChart({ months }) {
   const max = Math.max(1, ...months.flatMap((m) => [m.propostas, m.contratos]));
   return (
-    <Card padding="lg">
+    <Card padding="lg" className="bd-dash-panel">
       <div className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginBottom: 'var(--bd-space-4)' }}>
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, margin: 0 }}>Evolução mensal</h3>
         <div className="bd-u-flex bd-u-gap-4">

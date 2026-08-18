@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 export default function PropostaVersoes() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function PropostaVersoes() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-4">
+      <BackButton to={`/propostas/${id}`} label="Voltar para a proposta" />
       <h1 style={{ fontSize: 22 }}>Histórico de versões</h1>
       {versions.length === 0 ? (
         <EmptyState title="Nenhuma versão registrada" text="Versões aparecem aqui a partir da primeira edição feita depois do envio da proposta." />

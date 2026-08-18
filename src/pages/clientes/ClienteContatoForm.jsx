@@ -7,6 +7,7 @@ import { Checkbox } from '../../design-system/components/forms/Checkbox.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const EMPTY = { nome: '', cargo: '', telefone: '', whatsapp: '', email: '', departamento: '', principal: false, observacoes: '' };
 
@@ -45,7 +46,9 @@ export default function ClienteContatoForm() {
   if (loading) return null;
 
   return (
-    <Card padding="lg" style={{ maxWidth: 560 }}>
+    <div className="bd-u-flex-col bd-u-gap-3" style={{ maxWidth: 560 }}>
+      <BackButton to={`/clientes/${id}`} label="Voltar para o cliente" />
+      <Card padding="lg">
       <form onSubmit={handleSubmit} className="bd-u-flex-col bd-u-gap-4">
         <Input label="Nome" required value={form.nome} onChange={set('nome')} />
         <div className="bd-u-grid-2 bd-u-gap-4">
@@ -65,6 +68,7 @@ export default function ClienteContatoForm() {
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
         </div>
       </form>
-    </Card>
+      </Card>
+    </div>
   );
 }

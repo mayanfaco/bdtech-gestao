@@ -6,7 +6,6 @@ const ITEMS = [
   { to: '/configuracoes/empresa', title: 'Empresa', text: 'Dados da BDTECH e textos padrão usados nas propostas.' },
   { to: '/configuracoes/usuarios', title: 'Usuários', text: 'Papéis e ativação dos usuários do sistema.' },
   { to: '/configuracoes/perfis-acesso', title: 'Perfis e permissões', text: 'O que cada papel pode ver, criar, editar ou excluir.' },
-  { to: '/configuracoes/pipeline', title: 'Etapas do funil', text: 'Configurar as etapas do Kanban de oportunidades.' },
   { to: '/configuracoes/automacoes', title: 'Automações', text: 'Prazos usados nos alertas e tarefas automáticas.' },
   { to: '/configuracoes/integracoes/google-calendar', title: 'Google Calendar', text: 'Conectar sua conta Google para sincronizar eventos automaticamente.' },
   { to: '/configuracoes/integracoes/assinatura', title: 'Assinatura eletrônica', text: 'Configurar o provedor de assinatura eletrônica de contratos.' },

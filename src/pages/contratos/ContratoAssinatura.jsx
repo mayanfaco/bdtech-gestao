@@ -5,6 +5,7 @@ import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
+import { BackButton } from '../../components/BackButton.jsx';
 
 const PROVIDER_LABEL = { none: 'Nenhum configurado', clicksign: 'Clicksign', d4sign: 'D4Sign', docusign: 'DocuSign' };
 
@@ -36,6 +37,7 @@ export default function ContratoAssinatura() {
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6" style={{ maxWidth: 560 }}>
+      <BackButton to={`/contratos/${id}`} label="Voltar para o contrato" />
       <h1 style={{ fontSize: 22 }}>Assinatura eletrônica</h1>
 
       <Alert tone={provider === 'none' ? 'warning' : 'info'} title={provider === 'none' ? 'Integração ainda não configurada' : `Provedor selecionado: ${PROVIDER_LABEL[provider]}`}>

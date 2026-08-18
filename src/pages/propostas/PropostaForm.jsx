@@ -1,21 +1,30 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
-import { useStaffOptions } from '../../lib/staffOptions.js';
 import { modelo1Calculo, modelo2Calculo, formatCurrency } from '../../lib/proposalCalculations.js';
 import { Input } from '../../design-system/components/forms/Input.jsx';
-import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { IconButton } from '../../design-system/components/buttons/IconButton.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
-import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { PropostaDocumentPreview } from '../../components/propostas/PropostaDocumentPreview.jsx';
+import { injectDocumentEditorLayoutCss } from '../../components/documentEditorLayoutCss.js';
+import { BackButton } from '../../components/BackButton.jsx';
+import '../../print.css';
+
+injectDocumentEditorLayoutCss();
+
+// Id sintético para o contato que vem gravado direto no cadastro do cliente
+// (cliente.contato_nome), quando ele não tem um contato próprio em client_contacts.
+// Não é uma FK real — na hora de salvar vira null, e o documento usa o contato
+// do próprio cliente como fallback.
+const INLINE_CONTACT_ID = '__inline__';
 
 const EMPTY = {
-  client_id: '', contact_id: '', servico_tipo: 'Consultoria Técnica em Elevadores',
-  titulo: '', descricao: '', escopo: '', qtd_elevadores: '', data_proposta: new Date().toISOString().slice(0, 10),
+  client_id: '', contact_id: '', servico_tipo: 'Pontual',
+  titulo: '', descricao: '', escopo: '', qtd_elevadores: '1', data_proposta: new Date().toISOString().slice(0, 10),
   desconto_percentual: '0', tipo_precificacao: 'modelo_fixo',
-  modelo1_valor_com_desconto: '', modelo1_entrada_percentual: '50',
+  modelo1_valor_com_desconto: '', modelo1_entrada_percentual: '50', modelo1_parcelas_restante: '1',
   modelo2_valor_com_desconto_mensal: '', modelo2_entrada_percentual: '0', modelo2_parcelas_restante: '12',
   condicoes_pagamento: '', prazo_execucao: '', data_validade: '', responsavel_user_id: '',
 };
@@ -25,9 +34,9 @@ export default function PropostaForm() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
-  const staffOptions = useStaffOptions();
   const [clients, setClients] = React.useState([]);
   const [contacts, setContacts] = React.useState([]);
+  const [settings, setSettings] = React.useState(null);
   const [items, setItems] = React.useState([]);
   const [form, setForm] = React.useState({
     ...EMPTY,
@@ -39,15 +48,31 @@ export default function PropostaForm() {
   const [error, setError] = React.useState('');
 
   React.useEffect(() => {
-    supabase.from('clients').select('id, nome, qtd_elevadores').is('deleted_at', null).order('nome')
+    supabase.from('clients').select('id, nome, qtd_elevadores, contato_nome, contato_cargo').is('deleted_at', null).order('nome')
       .then(({ data }) => setClients(data ?? []));
+    supabase.from('company_settings').select('*').maybeSingle().then(({ data }) => setSettings(data));
   }, []);
 
+  // Ao trocar o cliente, carrega os contatos e já seleciona um automaticamente:
+  // o contato principal (ou o primeiro) cadastrado; se o cliente não tiver
+  // contatos separados, usa o contato principal gravado no próprio cliente.
   React.useEffect(() => {
     if (!form.client_id) { setContacts([]); return; }
-    supabase.from('client_contacts').select('id, nome').eq('client_id', form.client_id).is('deleted_at', null)
-      .then(({ data }) => setContacts((data ?? []).map((c) => ({ value: c.id, label: c.nome }))));
-  }, [form.client_id]);
+    supabase.from('client_contacts').select('id, nome, cargo, principal').eq('client_id', form.client_id).is('deleted_at', null)
+      .order('principal', { ascending: false })
+      .then(({ data }) => {
+        const rows = data ?? [];
+        const cliente = clients.find((c) => c.id === form.client_id);
+        const opts = [...rows];
+        if (cliente?.contato_nome && !rows.some((r) => r.nome === cliente.contato_nome)) {
+          opts.push({ id: INLINE_CONTACT_ID, nome: cliente.contato_nome, cargo: cliente.contato_cargo });
+        }
+        setContacts(opts);
+        if (!isEdit) {
+          setForm((f) => (opts.some((o) => o.id === f.contact_id) ? f : { ...f, contact_id: opts[0]?.id ?? '' }));
+        }
+      });
+  }, [form.client_id, clients, isEdit]);
 
   React.useEffect(() => {
     if (!isEdit) return;
@@ -75,26 +100,22 @@ export default function PropostaForm() {
     setSaving(true);
     setError('');
 
+    const { data: userData } = await supabase.auth.getUser();
     const payload = {
       client_id: form.client_id || null,
-      contact_id: form.contact_id || null,
+      contact_id: (form.contact_id && form.contact_id !== INLINE_CONTACT_ID) ? form.contact_id : null,
       servico_tipo: form.servico_tipo,
-      titulo: form.titulo,
-      descricao: form.descricao,
-      escopo: form.escopo,
       qtd_elevadores: form.qtd_elevadores ? Number(form.qtd_elevadores) : null,
       data_proposta: form.data_proposta,
       desconto_percentual: Number(form.desconto_percentual) || 0,
       tipo_precificacao: form.tipo_precificacao,
       modelo1_valor_com_desconto: form.modelo1_valor_com_desconto ? Number(form.modelo1_valor_com_desconto) : null,
       modelo1_entrada_percentual: form.modelo1_entrada_percentual ? Number(form.modelo1_entrada_percentual) : null,
+      modelo1_parcelas_restante: form.modelo1_parcelas_restante ? Number(form.modelo1_parcelas_restante) : null,
       modelo2_valor_com_desconto_mensal: form.modelo2_valor_com_desconto_mensal ? Number(form.modelo2_valor_com_desconto_mensal) : null,
       modelo2_entrada_percentual: form.modelo2_entrada_percentual ? Number(form.modelo2_entrada_percentual) : null,
       modelo2_parcelas_restante: form.modelo2_parcelas_restante ? Number(form.modelo2_parcelas_restante) : null,
-      condicoes_pagamento: form.condicoes_pagamento,
-      prazo_execucao: form.prazo_execucao,
-      data_validade: form.data_validade || null,
-      responsavel_user_id: form.responsavel_user_id || null,
+      responsavel_user_id: form.responsavel_user_id || userData.user.id,
     };
 
     let proposalId = id;
@@ -102,8 +123,6 @@ export default function PropostaForm() {
       const result = await supabase.from('proposals').update(payload).eq('id', id).select().single();
       if (result.error) { setError(result.error.message); setSaving(false); return; }
     } else {
-      const { data: userData } = await supabase.auth.getUser();
-      const { data: settings } = await supabase.from('company_settings').select('texto_objeto, texto_modelos, texto_vigencia, texto_responsabilidade').maybeSingle();
       const result = await supabase.from('proposals').insert({
         ...payload,
         created_by: userData.user.id,
@@ -136,93 +155,97 @@ export default function PropostaForm() {
   if (loading) return null;
 
   const m1 = modelo1Calculo({
-    valorComDesconto: form.modelo1_valor_com_desconto, descontoPercentual: form.desconto_percentual, entradaPercentual: form.modelo1_entrada_percentual,
+    valorComDesconto: form.modelo1_valor_com_desconto, descontoPercentual: form.desconto_percentual,
+    entradaPercentual: form.modelo1_entrada_percentual, parcelasRestante: form.modelo1_parcelas_restante,
   });
   const m2 = modelo2Calculo({
     valorComDescontoMensal: form.modelo2_valor_com_desconto_mensal, descontoPercentual: form.desconto_percentual,
     entradaPercentual: form.modelo2_entrada_percentual, parcelasRestante: form.modelo2_parcelas_restante,
   });
+  const selectedClient = clients.find((c) => c.id === form.client_id);
+  const selectedContact = contacts.find((c) => c.id === form.contact_id);
 
   return (
-    <Card padding="lg" style={{ maxWidth: 760 }}>
-      <form onSubmit={handleSubmit} className="bd-u-flex-col bd-u-gap-4">
-        <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16 }}>Dados do cliente</h3>
-        <div className="bd-u-grid-2 bd-u-gap-4">
+    <div className="bd-u-flex-col bd-u-gap-3">
+      <BackButton to={isEdit ? `/propostas/${id}` : '/propostas'} label={isEdit ? 'Voltar para a proposta' : 'Voltar para Propostas'} />
+      <div className="bd-doc-editor">
+      <form onSubmit={handleSubmit} className="bd-doc-editor__form">
+        <div className="bd-doc-editor__form-scroll bd-u-flex-col bd-u-gap-4">
+          <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16 }}>Dados do cliente</h3>
           <Select label="Cliente / Empreendimento" required value={form.client_id} onChange={set('client_id')}
             placeholder="Selecione..." options={clients.map((c) => ({ value: c.id, label: c.nome }))} />
-          <Select label="Contato" value={form.contact_id} onChange={set('contact_id')} placeholder="Selecione..." options={contacts} />
-        </div>
-        <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Quantidade de elevadores" type="number" min="0" value={form.qtd_elevadores} onChange={set('qtd_elevadores')} />
-          <Input label="Data da proposta" type="date" value={form.data_proposta} onChange={set('data_proposta')} />
-        </div>
-        <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Título" value={form.titulo} onChange={set('titulo')} />
-          <Input label="Tipo de serviço" value={form.servico_tipo} onChange={set('servico_tipo')} />
-        </div>
-        <Textarea label="Descrição" rows={2} value={form.descricao} onChange={set('descricao')} />
-        <Textarea label="Escopo" rows={2} value={form.escopo} onChange={set('escopo')} />
-
-        <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Precificação</h3>
-        <Select label="Tipo de precificação" value={form.tipo_precificacao} onChange={set('tipo_precificacao')}
-          options={[{ value: 'modelo_fixo', label: 'Modelos BDTECH (pontual / anual)' }, { value: 'itemizado', label: 'Itens personalizados' }]} />
-
-        {form.tipo_precificacao === 'modelo_fixo' ? (
-          <>
-            <Input label="Desconto (%) — vale para os dois modelos" type="number" min="0" max="100" step="0.01"
-              value={form.desconto_percentual} onChange={set('desconto_percentual')} />
-
-            <Card padding="md" flat style={{ background: 'var(--bd-surface-sunken)' }}>
-              <strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-text-muted)' }}>Modelo 1 — Serviço técnico pontual</strong>
-              <div className="bd-u-grid-2 bd-u-gap-4" style={{ marginTop: 'var(--bd-space-3)' }}>
-                <Input label="Valor com desconto (R$)" type="number" step="0.01" value={form.modelo1_valor_com_desconto} onChange={set('modelo1_valor_com_desconto')}
-                  hint={m1.valorInicial != null ? `Valor inicial: ${formatCurrency(m1.valorInicial)}` : undefined} />
-                <Input label="Entrada na assinatura (%)" type="number" min="0" max="100" value={form.modelo1_entrada_percentual} onChange={set('modelo1_entrada_percentual')}
-                  hint={`Restante na entrega do laudo: ${m1.restantePercentual}% (${formatCurrency(m1.restanteValor)})`} />
-              </div>
-            </Card>
-
-            <Card padding="md" flat style={{ background: 'var(--bd-surface-sunken)' }}>
-              <strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-text-muted)' }}>Modelo 2 — Serviço técnico continuado</strong>
-              <div className="bd-u-grid-2 bd-u-gap-4" style={{ marginTop: 'var(--bd-space-3)' }}>
-                <Input label="Valor com desconto mensal (R$)" type="number" step="0.01" value={form.modelo2_valor_com_desconto_mensal} onChange={set('modelo2_valor_com_desconto_mensal')}
-                  hint={m2.valorInicialMensal != null ? `Valor inicial: ${formatCurrency(m2.valorInicialMensal)}` : undefined} />
-                <Input label="Entrada no fechamento (%)" type="number" min="0" max="100" value={form.modelo2_entrada_percentual} onChange={set('modelo2_entrada_percentual')} />
-              </div>
-              <div className="bd-u-grid-2 bd-u-gap-4" style={{ marginTop: 'var(--bd-space-3)' }}>
-                <Input label="Número de parcelas do restante" type="number" min="1" value={form.modelo2_parcelas_restante} onChange={set('modelo2_parcelas_restante')}
-                  hint={m2.valorParcela != null ? `Valor de cada parcela: ${formatCurrency(m2.valorParcela)}` : undefined} />
-              </div>
-            </Card>
-          </>
-        ) : (
-          <div className="bd-u-flex-col bd-u-gap-2">
-            {items.map((it, i) => (
-              <div key={i} className="bd-u-flex bd-u-gap-2 bd-u-items-center">
-                <Input placeholder="Descrição" value={it.descricao} onChange={(e) => updateItem(i, 'descricao', e.target.value)} style={{ flex: 2 }} />
-                <Input type="number" placeholder="Qtd" value={it.quantidade} onChange={(e) => updateItem(i, 'quantidade', Number(e.target.value))} style={{ width: 80 }} />
-                <Input type="number" placeholder="Valor unitário" value={it.valor_unitario} onChange={(e) => updateItem(i, 'valor_unitario', Number(e.target.value))} style={{ width: 140 }} />
-                <IconButton label="Remover" size="sm" onClick={() => removeItem(i)}>×</IconButton>
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={addItem} style={{ alignSelf: 'flex-start' }}>Adicionar item</Button>
+          <Select label="Contato" value={form.contact_id} onChange={set('contact_id')} placeholder="Selecione..."
+            options={contacts.map((c) => ({ value: c.id, label: c.nome }))} />
+          <Input label="Quantidade de elevadores" type="number" min="0" required value={form.qtd_elevadores} onChange={set('qtd_elevadores')} />
+          <div className="bd-u-grid-2 bd-u-gap-4">
+            <Input label="Data da proposta" type="date" value={form.data_proposta} onChange={set('data_proposta')} />
+            <Select label="Tipo de serviço" value={form.servico_tipo} onChange={set('servico_tipo')}
+              options={[{ value: 'Pontual', label: 'Pontual' }, { value: 'Anual', label: 'Anual' }]} />
           </div>
-        )}
 
-        <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Condições</h3>
-        <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Prazo de execução" value={form.prazo_execucao} onChange={set('prazo_execucao')} />
-          <Input label="Validade da proposta" type="date" value={form.data_validade} onChange={set('data_validade')} />
+          <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Precificação</h3>
+          <Select label="Tipo de precificação" value={form.tipo_precificacao} onChange={set('tipo_precificacao')}
+            options={[{ value: 'modelo_fixo', label: 'Modelos BDTECH (pontual / anual)' }, { value: 'itemizado', label: 'Itens personalizados' }]} />
+
+          {form.tipo_precificacao === 'modelo_fixo' ? (
+            <>
+              <Input label="Desconto (%) — vale para os dois modelos" type="number" min="0" max="100" step="0.01"
+                value={form.desconto_percentual} onChange={set('desconto_percentual')} />
+
+              <div style={{ background: 'var(--bd-surface-sunken)', borderRadius: 'var(--bd-radius-md)', padding: 'var(--bd-space-4)' }}>
+                <strong style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-text-muted)' }}>Modelo 1 — Pontual</strong>
+                <div className="bd-u-flex-col bd-u-gap-3" style={{ marginTop: 'var(--bd-space-3)' }}>
+                  <Input label="Valor com desconto (R$)" type="number" step="0.01" value={form.modelo1_valor_com_desconto} onChange={set('modelo1_valor_com_desconto')}
+                    hint={m1.valorInicial != null ? `Valor inicial: ${formatCurrency(m1.valorInicial)}` : undefined} />
+                  <Input label="Entrada na assinatura (%)" type="number" min="0" max="100" value={form.modelo1_entrada_percentual} onChange={set('modelo1_entrada_percentual')}
+                    hint={`Restante: ${m1.restantePercentual}% (${formatCurrency(m1.restanteValor)})`} />
+                  <Input label="Número de parcelas do restante" type="number" min="1" value={form.modelo1_parcelas_restante} onChange={set('modelo1_parcelas_restante')}
+                    hint={Number(form.modelo1_parcelas_restante) > 1 && m1.valorParcela != null ? `Valor de cada parcela: ${formatCurrency(m1.valorParcela)}` : '1 = pagamento único na entrega do laudo'} />
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bd-surface-sunken)', borderRadius: 'var(--bd-radius-md)', padding: 'var(--bd-space-4)' }}>
+                <strong style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-text-muted)' }}>Modelo 2 — Continuado</strong>
+                <div className="bd-u-flex-col bd-u-gap-3" style={{ marginTop: 'var(--bd-space-3)' }}>
+                  <Input label="Valor total do contrato com desconto (R$)" type="number" step="0.01" value={form.modelo2_valor_com_desconto_mensal} onChange={set('modelo2_valor_com_desconto_mensal')}
+                    hint={m2.valorInicialMensal != null ? `Valor inicial: ${formatCurrency(m2.valorInicialMensal)}` : undefined} />
+                  <Input label="Entrada no fechamento (%)" type="number" min="0" max="100" value={form.modelo2_entrada_percentual} onChange={set('modelo2_entrada_percentual')} />
+                  <Input label="Número de parcelas do restante" type="number" min="1" value={form.modelo2_parcelas_restante} onChange={set('modelo2_parcelas_restante')}
+                    hint={m2.valorParcela != null ? `Valor de cada parcela: ${formatCurrency(m2.valorParcela)}` : undefined} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="bd-u-flex-col bd-u-gap-2">
+              {items.map((it, i) => (
+                <div key={i} className="bd-u-flex bd-u-gap-2 bd-u-items-center">
+                  <Input placeholder="Descrição" value={it.descricao} onChange={(e) => updateItem(i, 'descricao', e.target.value)} style={{ flex: 2 }} />
+                  <Input type="number" placeholder="Qtd" value={it.quantidade} onChange={(e) => updateItem(i, 'quantidade', Number(e.target.value))} style={{ width: 70 }} />
+                  <Input type="number" placeholder="Valor unit." value={it.valor_unitario} onChange={(e) => updateItem(i, 'valor_unitario', Number(e.target.value))} style={{ width: 100 }} />
+                  <IconButton label="Remover" size="sm" onClick={() => removeItem(i)}>×</IconButton>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={addItem} style={{ alignSelf: 'flex-start' }}>Adicionar item</Button>
+            </div>
+          )}
+
+          {error && <Alert tone="danger">{error}</Alert>}
         </div>
-        <Textarea label="Condições comerciais / observações" rows={2} value={form.condicoes_pagamento} onChange={set('condicoes_pagamento')} />
-        <Select label="Responsável" value={form.responsavel_user_id} onChange={set('responsavel_user_id')} placeholder="Selecione..." options={staffOptions} />
-
-        {error && <Alert tone="danger">{error}</Alert>}
-        <div className="bd-u-flex bd-u-gap-3">
-          <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar como rascunho'}</Button>
+        <div className="bd-doc-editor__form-footer">
+          <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar proposta'}</Button>
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Cancelar</Button>
         </div>
       </form>
-    </Card>
+
+      <div className="bd-doc-editor__preview">
+        <PropostaDocumentPreview
+          proposal={form}
+          client={selectedClient}
+          contact={selectedContact}
+          settings={settings}
+        />
+      </div>
+      </div>
+    </div>
   );
 }
