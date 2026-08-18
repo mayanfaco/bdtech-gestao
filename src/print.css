@@ -19,23 +19,23 @@
     /* Compacta o documento para caber em ~2 páginas: reduz o espaçamento
        vertical entre seções e dentro das caixas (a tela do gerador continua
        com o espaçamento normal — isto vale só na impressão/PDF). */
-    --bd-space-12: 14px;
-    --bd-space-10: 11px;
-    --bd-space-8:  11px;
-    --bd-space-6:  9px;
-    --bd-space-5:  7px;
-    --bd-space-4:  6px;
-    --bd-space-3:  5px;
+    --bd-space-12: 8px;
+    --bd-space-10: 8px;
+    --bd-space-8:  7px;
+    --bd-space-6:  6px;
+    --bd-space-5:  5px;
+    --bd-space-4:  4px;
+    --bd-space-3:  3px;
   }
 
   /* Fontes um pouco menores no PDF, mantendo a hierarquia. */
-  .bd-print-page h1 { font-size: 20px !important; margin: 6px 0 10px !important; }
-  .bd-print-page h2 { font-size: 15px !important; }
-  .bd-print-page p  { font-size: 11px !important; line-height: 1.35 !important; }
-  .bd-print-page li { font-size: 11px !important; line-height: 1.3 !important; }
-  .bd-print-page ul { margin-top: 3px !important; }
-  .bd-print-page footer { margin-top: 14px !important; padding-top: 8px !important; }
-  .bd-print-page footer > div { margin-bottom: 1px !important; }
+  .bd-print-page h1 { font-size: 17px !important; margin: 3px 0 6px !important; }
+  .bd-print-page h2 { font-size: 14px !important; }
+  .bd-print-page p  { font-size: 10.3px !important; line-height: 1.25 !important; }
+  .bd-print-page li { font-size: 10.3px !important; line-height: 1.2 !important; }
+  .bd-print-page ul { margin-top: 2px !important; }
+  .bd-print-page footer { margin-top: 8px !important; padding-top: 5px !important; }
+  .bd-print-page .bd-doc-sign-line { height: 46px !important; }
 
   /* Evita que uma caixa/faixa colorida seja cortada no meio, dividida entre
      duas páginas — deixa o PDF mais parecido com a prévia contínua. */
