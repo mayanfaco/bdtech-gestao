@@ -35,7 +35,7 @@
   .bd-print-page li { font-size: 10.3px !important; line-height: 1.2 !important; }
   .bd-print-page ul { margin-top: 2px !important; }
   .bd-print-page footer { margin-top: 8px !important; padding-top: 5px !important; }
-  .bd-print-page .bd-doc-sign-line { height: 46px !important; }
+  .bd-print-page .bd-doc-sign-line { height: 110px !important; }
 
   /* Evita que uma caixa/faixa colorida seja cortada no meio, dividida entre
      duas páginas — deixa o PDF mais parecido com a prévia contínua. */
