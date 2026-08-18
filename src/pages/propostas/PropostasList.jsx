@@ -135,6 +135,12 @@ export default function PropostasList() {
         </div>
       )}
 
+      {!modoDropdown && activeGroup && (
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-2">
+          <Button variant="outline" size="sm" onClick={() => setActiveGroup(null)}>← Ver todas as propostas</Button>
+        </div>
+      )}
+
       {proposals.length === 0 ? (
         <EmptyState title="Nenhuma proposta emitida ainda"
           text="Cadastre um cliente e emita a primeira proposta para começar a acompanhar aqui."

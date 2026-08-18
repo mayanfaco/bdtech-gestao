@@ -180,6 +180,7 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
             <li>Análise de Propostas de Modernização</li>
             <li>Análise de Contratos de Manutenção</li>
             <li>Análise dos Orçamentos de Peças de Reposição</li>
+            <li>Participação em reuniões importantes com Síndico/Conselho e Mantenedora</li>
           </ul>
           <p style={{ fontSize: 12, color: 'var(--bd-text-muted)', marginTop: 'var(--bd-space-4)', borderTop: '1px solid var(--bd-border-default)', paddingTop: 'var(--bd-space-3)' }}>
             O acompanhamento contínuo tem como objetivo reduzir riscos técnicos e operacionais, garantir conformidade normativa e oferecer respaldo
