@@ -8,6 +8,8 @@ import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
+import { IconButton } from '../../design-system/components/buttons/IconButton.jsx';
+import { I } from '../../components/layout/icons.jsx';
 
 function diasParaVencer(iso) {
   return iso ? Math.ceil((new Date(iso) - new Date()) / 86400000) : null;
@@ -23,10 +25,22 @@ export default function ContratosList() {
   const urlResponsavel = searchParams.get('responsavel');
   const vindoDaDash = urlStatuses.length > 0 || urlVencendo || urlResponsavel;
 
-  React.useEffect(() => {
+  const load = React.useCallback(() => {
     supabase.from('contracts').select('*, clients(nome)').is('deleted_at', null).order('created_at', { ascending: false })
       .then(({ data }) => setContracts(data ?? []));
   }, []);
+
+  React.useEffect(() => { load(); }, [load]);
+
+  async function handleDelete(e, c) {
+    e.preventDefault();
+    e.stopPropagation();
+    const label = `CONT-${new Date(c.data_inicio).getFullYear()}-${String(c.numero).padStart(4, '0')}`;
+    if (!window.confirm(`Excluir o contrato ${label}? Ele deixa de aparecer nas listas.`)) return;
+    const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', c.id);
+    if (error) { alert(error.message); return; }
+    load();
+  }
 
   if (contracts === null) return null;
 
@@ -76,7 +90,12 @@ export default function ContratosList() {
                       {c.data_inicio} a {c.data_termino} · {formatCurrency(c.valor_total)}
                     </div>
                   </div>
-                  <Badge tone={CONTRACT_STATUS_TONE[c.status]}>{CONTRACT_STATUS_LABEL[c.status]}</Badge>
+                  <div className="bd-u-flex bd-u-items-center bd-u-gap-3">
+                    <Badge tone={CONTRACT_STATUS_TONE[c.status]}>{CONTRACT_STATUS_LABEL[c.status]}</Badge>
+                    <IconButton label="Excluir contrato" size="sm" onClick={(e) => handleDelete(e, c)}>
+                      <span style={{ color: 'var(--bd-danger-500)', display: 'flex' }}>{I.trash}</span>
+                    </IconButton>
+                  </div>
                 </div>
               </Card>
             </Link>

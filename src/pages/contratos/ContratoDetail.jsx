@@ -35,6 +35,16 @@ export default function ContratoDetail() {
     setStatus('encerrado', { encerramento_motivo: motivo || null });
   }
 
+  async function handleExcluir() {
+    const label = `CONT-${contract.data_inicio ? new Date(contract.data_inicio).getFullYear() : ''}-${String(contract.numero).padStart(4, '0')}`;
+    if (!window.confirm(`Excluir o contrato ${label}? Ele deixa de aparecer nas listas.`)) return;
+    setBusy(true);
+    const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    setBusy(false);
+    if (error) { alert(error.message); return; }
+    navigate('/contratos');
+  }
+
   async function duplicar() {
     setBusy(true);
     const { data: userData } = await supabase.auth.getUser();
@@ -88,6 +98,7 @@ export default function ContratoDetail() {
           <Button variant="outline" as={Link} to={`/contratos/${id}/pdf`}>Imprimir / PDF</Button>
           <Button variant="outline" onClick={duplicar} loading={busy}>Duplicar</Button>
           <Button variant="outline" as={Link} to={`/contratos/${id}/editar`}>Editar</Button>
+          <Button variant="ghost" onClick={handleExcluir} loading={busy} style={{ color: 'var(--bd-danger-500)' }}>Excluir</Button>
         </div>
       </div>
 
