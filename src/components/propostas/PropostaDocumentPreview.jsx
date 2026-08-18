@@ -4,7 +4,6 @@ import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import logotypeNavy from '../../design-system/assets/brand/bdtech-logotype-navy.svg';
 
 const COMPANY_PHONE = '(85) 9.9698-5607';
-const COMPANY_EMAIL = 'bdtechelevadores@gmail.com';
 
 const DEFAULT_TEXTS = {
   texto_vigencia: 'O contrato terá vigência de 01 (um) ano. Será renovado automaticamente por iguais períodos, caso não haja manifestação contrária. Contrato será reajustado pelo IPCA.',
@@ -46,7 +45,7 @@ function SubHeading({ children }) {
 
 function ModeloBox({ badge, solid, borderColor, titulo, subtitulo, children }) {
   return (
-    <div style={{
+    <div className="bd-print-avoid-break" style={{
       background: 'var(--bd-neutral-50)', border: '1px solid var(--bd-border-subtle)', borderLeft: `4px solid ${borderColor}`,
       borderRadius: 'var(--bd-radius-md)', padding: 'var(--bd-space-6)', marginBottom: 'var(--bd-space-5)',
     }}>
@@ -277,12 +276,24 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
       </div>
 
       <footer className="bd-print-avoid-break" style={{ marginTop: 'var(--bd-space-12)', paddingTop: 'var(--bd-space-5)', borderTop: '1px solid var(--bd-border-default)' }}>
-        <div style={{ fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 15, color: 'var(--bd-navy-900)' }}>{settings?.representante_legal}</div>
-        <div style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>{settings?.crea} · Diretor Técnico</div>
-        <div style={{ fontSize: 13, color: 'var(--bd-text-muted)' }}>{COMPANY_PHONE} · {COMPANY_EMAIL}</div>
-        <div className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginTop: 'var(--bd-space-4)', paddingTop: 'var(--bd-space-3)', borderTop: '1px solid var(--bd-border-subtle)' }}>
-          <span style={{ fontSize: 11, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--bd-text-subtle)' }}>{settings?.razao_social}</span>
-          <span style={{ fontSize: 11, color: 'var(--bd-text-subtle)' }}>{COMPANY_EMAIL}</span>
+        <SectionHeading number="06" title="Assinaturas" />
+        <div className="bd-doc-signatures" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--bd-space-10)', marginTop: 'var(--bd-space-8)' }}>
+          <div>
+            <div className="bd-doc-sign-line" style={{ height: 90, borderBottom: '1px solid var(--bd-border-strong)' }} />
+            <div style={{ fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--bd-navy-900)', marginTop: 'var(--bd-space-3)' }}>
+              {settings?.representante_legal}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{settings?.crea} · Diretor Técnico</div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{settings?.razao_social}</div>
+          </div>
+          <div>
+            <div className="bd-doc-sign-line" style={{ height: 90, borderBottom: '1px solid var(--bd-border-strong)' }} />
+            <div style={{ fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--bd-navy-900)', marginTop: 'var(--bd-space-3)' }}>
+              {contact?.nome || client?.contato_nome || client?.sindico_nome || '—'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{contact?.cargo || client?.contato_cargo || 'Síndico'}</div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{client?.nome}</div>
+          </div>
         </div>
       </footer>
     </div>
