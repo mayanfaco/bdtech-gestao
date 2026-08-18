@@ -40,6 +40,11 @@
   /* Evita que uma caixa/faixa colorida seja cortada no meio, dividida entre
      duas páginas — deixa o PDF mais parecido com a prévia contínua. */
   .bd-print-avoid-break { break-inside: avoid; }
+
+  /* Evita título "órfão" — o cabeçalho numerado (ex.: "03 Condições
+     Comerciais") ficando sozinho no fim de uma página, separado do
+     conteúdo que ele apresenta. */
+  .bd-print-page h2 { break-after: avoid; }
 }
 
 .bd-print-page {
