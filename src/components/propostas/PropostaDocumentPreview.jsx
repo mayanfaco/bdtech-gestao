@@ -1,5 +1,6 @@
 import React from 'react';
 import { modelo1Calculo, modelo2Calculo, formatCurrency } from '../../lib/proposalCalculations.js';
+import { nomeContatoCompleto } from '../../lib/proposalContato.js';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import logotypeNavy from '../../design-system/assets/brand/bdtech-logotype-navy.svg';
 
@@ -86,6 +87,16 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
   const docCliente = client?.cpf_cnpj || client?.cnpj || null;
   const clienteIdentificacao = [razaoSocial, docCliente].filter(Boolean).join(' · ');
 
+  // A/C — a quem a proposta é dirigida (ver nomeContatoCompleto: o contato
+  // principal do cadastro costuma vir abreviado, e o documento formal precisa
+  // do nome completo do síndico quando é a mesma pessoa).
+  const contatoCargo = contact?.cargo || client?.contato_cargo || '';
+  const acNome = nomeContatoCompleto({
+    contatoNome: contact?.nome || client?.contato_nome,
+    sindicoNome: client?.sindico_nome,
+  });
+  const acLabel = acNome ? `${acNome}${contatoCargo ? ` — ${contatoCargo}` : ''}` : '—';
+
   return (
     <div className="bd-print-page">
       <header className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginBottom: 'var(--bd-space-5)' }}>
@@ -117,13 +128,7 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,.56)' }}>A/C</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginTop: 4 }}>
-              {(() => {
-                const nome = contact?.nome || client?.contato_nome;
-                const cargo = contact?.cargo || client?.contato_cargo;
-                return nome ? `${nome}${cargo ? ` — ${cargo}` : ''}` : '—';
-              })()}
-            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginTop: 4 }}>{acLabel}</div>
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,.56)' }}>Equipamentos</div>
@@ -299,7 +304,7 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
           <div>
             <div className="bd-doc-sign-line" style={{ height: 90, borderBottom: '1px solid var(--bd-border-strong)' }} />
             <div style={{ fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--bd-navy-900)', marginTop: 'var(--bd-space-3)' }}>
-              {contact?.nome || client?.contato_nome || client?.sindico_nome || '—'}
+              {acNome || '—'}
             </div>
             <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{contact?.cargo || client?.contato_cargo || 'Síndico'}</div>
             <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>{client?.nome}</div>

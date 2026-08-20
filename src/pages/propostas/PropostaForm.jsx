@@ -48,7 +48,7 @@ export default function PropostaForm() {
   const [error, setError] = React.useState('');
 
   React.useEffect(() => {
-    supabase.from('clients').select('id, nome, razao_social, cpf_cnpj, qtd_elevadores, contato_nome, contato_cargo').is('deleted_at', null).order('nome')
+    supabase.from('clients').select('id, nome, razao_social, cpf_cnpj, qtd_elevadores, sindico_nome, contato_nome, contato_cargo').is('deleted_at', null).order('nome')
       .then(({ data }) => setClients(data ?? []));
     supabase.from('company_settings').select('*').maybeSingle().then(({ data }) => setSettings(data));
   }, []);
