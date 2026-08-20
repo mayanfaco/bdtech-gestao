@@ -48,7 +48,7 @@ export default function PropostaForm() {
   const [error, setError] = React.useState('');
 
   React.useEffect(() => {
-    supabase.from('clients').select('id, nome, qtd_elevadores, contato_nome, contato_cargo').is('deleted_at', null).order('nome')
+    supabase.from('clients').select('id, nome, razao_social, cpf_cnpj, qtd_elevadores, contato_nome, contato_cargo').is('deleted_at', null).order('nome')
       .then(({ data }) => setClients(data ?? []));
     supabase.from('company_settings').select('*').maybeSingle().then(({ data }) => setSettings(data));
   }, []);
@@ -72,6 +72,18 @@ export default function PropostaForm() {
           setForm((f) => (opts.some((o) => o.id === f.contact_id) ? f : { ...f, contact_id: opts[0]?.id ?? '' }));
         }
       });
+  }, [form.client_id, clients, isEdit]);
+
+  // Herda a quantidade de elevadores do cadastro do cliente — sem isto a
+  // proposta saía sempre com "01 elevador", ignorando o que está registrado
+  // no condomínio. Só vale para proposta nova; ao editar, respeita o que já
+  // foi salvo. Não re-dispara depois, então uma alteração manual permanece.
+  React.useEffect(() => {
+    if (isEdit || !form.client_id) return;
+    const cliente = clients.find((c) => c.id === form.client_id);
+    if (cliente?.qtd_elevadores != null) {
+      setForm((f) => ({ ...f, qtd_elevadores: String(cliente.qtd_elevadores) }));
+    }
   }, [form.client_id, clients, isEdit]);
 
   React.useEffect(() => {

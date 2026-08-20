@@ -79,6 +79,13 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
   const desconto = Number(proposal.desconto_percentual) || 0;
   const qtdLabel = `${String(proposal.qtd_elevadores || 0).padStart(2, '0')} elevador(es) de transporte vertical`;
 
+  // Identificação completa do cliente: o campo "nome" é o nome curto do
+  // condomínio; a razão social e o CNPJ é que identificam juridicamente quem
+  // contrata. Só repete a razão social quando ela difere do nome.
+  const razaoSocial = client?.razao_social && client.razao_social !== client?.nome ? client.razao_social : null;
+  const docCliente = client?.cpf_cnpj || client?.cnpj || null;
+  const clienteIdentificacao = [razaoSocial, docCliente].filter(Boolean).join(' · ');
+
   return (
     <div className="bd-print-page">
       <header className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginBottom: 'var(--bd-space-5)' }}>
@@ -104,6 +111,9 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,.56)' }}>Cliente</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginTop: 4 }}>{client?.nome || '—'}</div>
+            {clienteIdentificacao && (
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.74)', marginTop: 3, lineHeight: 1.35 }}>{clienteIdentificacao}</div>
+            )}
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,.56)' }}>A/C</div>
