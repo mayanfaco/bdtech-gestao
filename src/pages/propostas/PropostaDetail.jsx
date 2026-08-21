@@ -30,8 +30,12 @@ export default function PropostaDetail() {
 
   async function setStatus(status, extra = {}) {
     setBusy(true);
-    await supabase.from('proposals').update({ status, ...extra }).eq('id', id);
+    // Sem checar o error, uma recusa do banco (RLS, constraint, trigger) passava
+    // em silêncio: a tela recarregava mostrando o status antigo e parecia que o
+    // botão simplesmente não funcionou.
+    const { error } = await supabase.from('proposals').update({ status, ...extra }).eq('id', id);
     setBusy(false);
+    if (error) { alert(`Não foi possível alterar o status: ${error.message}`); return; }
     setRefreshKey((k) => k + 1);
   }
 

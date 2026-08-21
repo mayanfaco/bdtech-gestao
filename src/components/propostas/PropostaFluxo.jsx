@@ -1,16 +1,7 @@
 import React from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
+import { estadoDoFluxo } from '../../lib/propostaFluxo.js';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
-
-// Etapas visíveis do andamento da proposta. Cada etapa "casa" com um ou mais
-// status internos (ex.: "Enviada" cobre enviada + visualizada).
-const STEPS = [
-  { key: 'rascunho', label: 'Criada', match: ['rascunho', 'pronta_para_envio'] },
-  { key: 'enviada', label: 'Enviada ao cliente', match: ['enviada', 'visualizada'] },
-  { key: 'em_negociacao', label: 'Em negociação', match: ['em_negociacao'] },
-  { key: 'aprovada', label: 'Aprovada', match: ['aprovada'] },
-];
-const NEGATIVOS = { recusada: 'Recusada', cancelada: 'Cancelada', expirada: 'Expirada', arquivada: 'Arquivada' };
 
 function fmt(d) {
   return d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
@@ -26,39 +17,36 @@ export function PropostaFluxo({ proposalId, currentStatus, refreshKey }) {
 
   if (hist === null) return null;
 
-  const dateOf = {};
-  hist.forEach((h) => { if (!dateOf[h.status]) dateOf[h.status] = h.changed_at; });
-  const negativo = NEGATIVOS[currentStatus];
-  const currentStepIndex = STEPS.findIndex((s) => s.match.includes(currentStatus));
+  // O estado das etapas vem do status atual (ver estadoDoFluxo) — o histórico
+  // guarda a passagem por cada etapa, mas não o estado de hoje.
+  const { etapas, negativo, dataNegativo } = estadoDoFluxo(currentStatus, hist);
 
   return (
     <Card padding="lg">
       <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, marginBottom: 'var(--bd-space-4)' }}>Andamento da proposta</h3>
       <div style={{ overflowX: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: 480 }}>
-          {STEPS.map((step, i) => {
-            const date = step.match.map((s) => dateOf[s]).find(Boolean);
-            const done = !!date || (currentStepIndex >= 0 && i < currentStepIndex);
-            const isCurrent = i === currentStepIndex && !negativo;
-            const ringColor = done ? 'var(--bd-success-500)' : isCurrent ? 'var(--bd-primary-500)' : 'var(--bd-border-strong)';
-            const fill = done ? 'var(--bd-success-500)' : isCurrent ? 'var(--bd-primary-500)' : 'var(--bd-surface-card)';
+          {etapas.map((etapa, i) => {
+            const { concluida, atual, alcancada, data } = etapa;
+            const ringColor = concluida ? 'var(--bd-success-500)' : atual ? 'var(--bd-primary-500)' : 'var(--bd-border-strong)';
+            const fill = concluida ? 'var(--bd-success-500)' : atual ? 'var(--bd-primary-500)' : 'var(--bd-surface-card)';
             return (
-              <React.Fragment key={step.key}>
+              <React.Fragment key={etapa.key}>
                 {i > 0 && (
-                  <div style={{ flex: 1, height: 2, background: done || i <= currentStepIndex ? 'var(--bd-success-500)' : 'var(--bd-border-default)', marginTop: 15 }} />
+                  <div style={{ flex: 1, height: 2, background: alcancada ? 'var(--bd-success-500)' : 'var(--bd-border-default)', marginTop: 15 }} />
                 )}
                 <div style={{ flex: '0 0 auto', width: 108, textAlign: 'center' }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: `2px solid ${ringColor}`, background: fill, color: (done || isCurrent) ? '#fff' : 'var(--bd-text-muted)',
+                    border: `2px solid ${ringColor}`, background: fill, color: (concluida || atual) ? '#fff' : 'var(--bd-text-muted)',
                     fontWeight: 800, fontSize: 14,
                   }}>
-                    {done ? '✓' : i + 1}
+                    {concluida ? '✓' : i + 1}
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: (done || isCurrent) ? 'var(--bd-text-strong)' : 'var(--bd-text-muted)', marginTop: 6, lineHeight: 1.3 }}>
-                    {step.label}
+                  <div style={{ fontSize: 12, fontWeight: 600, color: (concluida || atual) ? 'var(--bd-text-strong)' : 'var(--bd-text-muted)', marginTop: 6, lineHeight: 1.3 }}>
+                    {etapa.label}
                   </div>
-                  {date && <div style={{ fontSize: 11, color: 'var(--bd-text-subtle)', marginTop: 2 }}>{fmt(date)}</div>}
+                  {data && <div style={{ fontSize: 11, color: 'var(--bd-text-subtle)', marginTop: 2 }}>{fmt(data)}</div>}
                 </div>
               </React.Fragment>
             );
@@ -70,7 +58,7 @@ export function PropostaFluxo({ proposalId, currentStatus, refreshKey }) {
           marginTop: 'var(--bd-space-4)', padding: '10px 14px', borderRadius: 'var(--bd-radius-md)',
           background: 'var(--bd-danger-50)', color: 'var(--bd-danger-700)', fontSize: 13, fontWeight: 600,
         }}>
-          Proposta {negativo}{dateOf[currentStatus] ? ` em ${fmt(dateOf[currentStatus])}` : ''}.
+          Proposta {negativo}{dataNegativo ? ` em ${fmt(dataNegativo)}` : ''}.
         </div>
       )}
     </Card>
