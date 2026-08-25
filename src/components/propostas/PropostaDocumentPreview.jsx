@@ -96,6 +96,7 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
   const contatoCargo = client?.contato_cargo || contact?.cargo || '';
   const acNome = nomeContatoCompleto({
     contatoNome: client?.contato_nome || contact?.nome,
+    contatoCargo,
     sindicoNome: client?.sindico_nome,
   });
   const acLabel = acNome ? `${acNome}${contatoCargo ? ` — ${contatoCargo}` : ''}` : '—';

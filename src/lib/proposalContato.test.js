@@ -13,11 +13,30 @@ describe('nomeContatoCompleto', () => {
       .toBe('Alcides Zulian Jr.');
   });
 
-  it('NÃO troca quando os nomes divergem na grafia', () => {
-    // Caso real: "Julian" x "Zulian". Trocar aqui esconderia o cadastro
-    // divergente e o documento sairia com um nome que o usuário não vê.
-    expect(nomeContatoCompleto({ contatoNome: 'Alcides Julian Jr.', sindicoNome: 'Alcides Zulian Jr.' }))
-      .toBe('Alcides Julian Jr.');
+  it('quando o contato É o síndico, o campo do síndico manda (corrige grafia)', () => {
+    // Caso real: cadastro corrigido para "Zulian" no campo do síndico, mas o
+    // contato principal ficou com "Julian" — e a proposta saía com o antigo.
+    expect(nomeContatoCompleto({
+      contatoNome: 'Alcides Julian Jr.', contatoCargo: 'Síndico', sindicoNome: 'Alcides Zulian Jr.',
+    })).toBe('Alcides Zulian Jr.');
+    // Aceita "Sindico" sem acento e outras variações do cargo.
+    expect(nomeContatoCompleto({
+      contatoNome: 'Alcides Julian Jr.', contatoCargo: 'sindico', sindicoNome: 'Alcides Zulian Jr.',
+    })).toBe('Alcides Zulian Jr.');
+  });
+
+  it('NÃO troca a grafia quando o contato NÃO é o síndico', () => {
+    // Outro cargo: são registros de pessoas distintas na cabeça do usuário,
+    // trocar aqui poria no documento um nome que ele não escolheu.
+    expect(nomeContatoCompleto({
+      contatoNome: 'Alcides Julian Jr.', contatoCargo: 'Administradora', sindicoNome: 'Alcides Zulian Jr.',
+    })).toBe('Alcides Julian Jr.');
+  });
+
+  it('NÃO troca por outra pessoa mesmo com cargo de síndico', () => {
+    expect(nomeContatoCompleto({
+      contatoNome: 'Maria Souza', contatoCargo: 'Síndico', sindicoNome: 'João Pereira Lima',
+    })).toBe('Maria Souza');
   });
 
   it('respeita o contato quando é outra pessoa, não o síndico', () => {

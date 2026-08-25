@@ -10,6 +10,7 @@ import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { PropostaDocumentPreview } from '../../components/propostas/PropostaDocumentPreview.jsx';
 import { injectDocumentEditorLayoutCss } from '../../components/documentEditorLayoutCss.js';
 import { BackButton } from '../../components/BackButton.jsx';
+import { nomeContatoCompleto } from '../../lib/proposalContato.js';
 import '../../print.css';
 
 injectDocumentEditorLayoutCss();
@@ -150,8 +151,17 @@ export default function PropostaForm() {
     entradaPercentual: form.modelo2_entrada_percentual, parcelasRestante: form.modelo2_parcelas_restante,
   });
   const selectedClient = clients.find((c) => c.id === form.client_id);
+  // Mesma regra do documento (nomeContatoCompleto), para o resumo não mostrar
+  // um nome e a proposta sair com outro.
   const contatoDoDocumento = selectedClient
-    ? [selectedClient.contato_nome, selectedClient.contato_cargo].filter(Boolean).join(' — ')
+    ? [
+      nomeContatoCompleto({
+        contatoNome: selectedClient.contato_nome,
+        contatoCargo: selectedClient.contato_cargo,
+        sindicoNome: selectedClient.sindico_nome,
+      }),
+      selectedClient.contato_cargo,
+    ].filter(Boolean).join(' — ')
     : '';
 
   return (

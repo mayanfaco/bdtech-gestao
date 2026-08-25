@@ -6,7 +6,7 @@ import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
-import { nomesProvavelmenteDivergentes } from '../../lib/proposalContato.js';
+import { nomeContatoCompleto, nomesProvavelmenteDivergentes } from '../../lib/proposalContato.js';
 
 // --- máscaras (só dígitos, formatação e limite de caracteres) ---
 const onlyDigits = (s) => (s || '').replace(/\D/g, '');
@@ -151,6 +151,9 @@ export default function ClienteForm() {
   const nomesDivergem = nomesProvavelmenteDivergentes({
     contatoNome: form.contato_nome, sindicoNome: form.sindico_nome,
   });
+  const nomeUsadoNaProposta = nomeContatoCompleto({
+    contatoNome: form.contato_nome, contatoCargo: form.contato_cargo, sindicoNome: form.sindico_nome,
+  });
 
   return (
     <div className="bd-u-flex-col bd-u-gap-3" style={{ maxWidth: 920 }}>
@@ -193,8 +196,8 @@ export default function ClienteForm() {
             {nomesDivergem && (
               <Alert tone="warning">
                 O nome do síndico e o do contato principal parecem ser da mesma pessoa, escritos de forma
-                diferente — provavelmente um foi corrigido e o outro ficou para trás. A proposta usa o
-                <strong> contato principal</strong>, então confira qual está certo.
+                diferente — provavelmente um foi corrigido e o outro ficou para trás. A proposta vai sair
+                com <strong>{nomeUsadoNaProposta}</strong>; iguale os campos para não ficar dúvida.
                 <div className="bd-u-flex bd-u-gap-2" style={{ marginTop: 'var(--bd-space-3)', flexWrap: 'wrap' }}>
                   <Button type="button" size="sm" variant="outline" onClick={copiarSindicoParaContato}>
                     Usar &ldquo;{form.sindico_nome}&rdquo; nos dois

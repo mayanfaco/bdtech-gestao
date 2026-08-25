@@ -18,7 +18,7 @@ const palavras = (s) => normaliza(s).toLowerCase().split(' ').filter(Boolean);
  * Divergências assim são sinalizadas no cadastro do cliente (ver
  * nomesProvavelmenteDivergentes).
  */
-export function nomeContatoCompleto({ contatoNome, sindicoNome }) {
+export function nomeContatoCompleto({ contatoNome, contatoCargo, sindicoNome }) {
   const contato = normaliza(contatoNome);
   const sindico = normaliza(sindicoNome);
   if (!sindico) return contato;
@@ -26,7 +26,18 @@ export function nomeContatoCompleto({ contatoNome, sindicoNome }) {
 
   const pc = palavras(contato);
   const ps = palavras(sindico);
-  // Subsequência: o contato "cabe" dentro do nome do síndico, na ordem.
+  const mesmaPessoa = pc[0] === ps[0];
+
+  // Quando o contato principal É o síndico, o campo "Síndico (nome completo)"
+  // é o nome oficial dessa pessoa — é ele que vai para o contrato. Então ele
+  // manda, inclusive numa correção de grafia ("Julian" → "Zulian"), que a
+  // regra de completar (abaixo) não pega por não ser uma abreviação.
+  const contatoEhSindico = /s[íi]ndic/i.test(normaliza(contatoCargo));
+  if (contatoEhSindico && mesmaPessoa) return sindico;
+
+  // Fora isso, só completa nome abreviado: todas as palavras do contato
+  // aparecem no do síndico, na ordem ("Thiago" → "Thiago Almeida Costa").
+  // Nomes de pessoas diferentes nunca são trocados.
   let i = 0;
   for (const p of ps) { if (i < pc.length && p === pc[i]) i += 1; }
   const ehMesmoNomeMaisCompleto = i === pc.length && ps.length > pc.length;
