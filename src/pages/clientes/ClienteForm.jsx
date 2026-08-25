@@ -6,6 +6,7 @@ import { Select } from '../../design-system/components/forms/Select.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
+import { nomesProvavelmenteDivergentes } from '../../lib/proposalContato.js';
 
 // --- máscaras (só dígitos, formatação e limite de caracteres) ---
 const onlyDigits = (s) => (s || '').replace(/\D/g, '');
@@ -145,6 +146,11 @@ export default function ClienteForm() {
   if (loading) return null;
 
   const isPF = form.tipo_pessoa === 'PF';
+  // Avisa quando "Síndico" e "Contato principal" parecem a mesma pessoa com
+  // grafias diferentes: é o que faz a proposta sair com o nome desatualizado.
+  const nomesDivergem = nomesProvavelmenteDivergentes({
+    contatoNome: form.contato_nome, sindicoNome: form.sindico_nome,
+  });
 
   return (
     <div className="bd-u-flex-col bd-u-gap-3" style={{ maxWidth: 920 }}>
@@ -184,6 +190,22 @@ export default function ClienteForm() {
               Copiar dados do síndico
             </Button>
             <Input label="Nome do contato principal" value={form.contato_nome} onChange={set('contato_nome')} />
+            {nomesDivergem && (
+              <Alert tone="warning">
+                O nome do síndico e o do contato principal parecem ser da mesma pessoa, escritos de forma
+                diferente — provavelmente um foi corrigido e o outro ficou para trás. A proposta usa o
+                <strong> contato principal</strong>, então confira qual está certo.
+                <div className="bd-u-flex bd-u-gap-2" style={{ marginTop: 'var(--bd-space-3)', flexWrap: 'wrap' }}>
+                  <Button type="button" size="sm" variant="outline" onClick={copiarSindicoParaContato}>
+                    Usar &ldquo;{form.sindico_nome}&rdquo; nos dois
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost"
+                    onClick={() => setForm((f) => ({ ...f, sindico_nome: f.contato_nome }))}>
+                    Usar &ldquo;{form.contato_nome}&rdquo; nos dois
+                  </Button>
+                </div>
+              </Alert>
+            )}
             <Input label="Cargo do contato" value={form.contato_cargo} onChange={set('contato_cargo')} />
             <Input label="E-mail" type="email" value={form.contato_email} onChange={set('contato_email')} />
             <Input label="WhatsApp / Contato" value={form.whatsapp} onChange={set('whatsapp')} />

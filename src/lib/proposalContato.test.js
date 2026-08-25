@@ -1,11 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { nomeContatoCompleto } from './proposalContato.js';
+import { nomeContatoCompleto, nomesProvavelmenteDivergentes } from './proposalContato.js';
 
 describe('nomeContatoCompleto', () => {
-  it('usa o nome completo do síndico quando o contato está abreviado', () => {
-    // Caso real reportado: o A/C da proposta saía só "Thiago".
+  it('completa o nome abreviado usando o do síndico', () => {
+    // Caso real: o A/C da proposta saía só "Thiago".
     expect(nomeContatoCompleto({ contatoNome: 'Thiago', sindicoNome: 'Thiago Almeida Costa' }))
       .toBe('Thiago Almeida Costa');
+  });
+
+  it('completa mesmo quando falta um nome do meio', () => {
+    expect(nomeContatoCompleto({ contatoNome: 'Alcides Jr.', sindicoNome: 'Alcides Zulian Jr.' }))
+      .toBe('Alcides Zulian Jr.');
+  });
+
+  it('NÃO troca quando os nomes divergem na grafia', () => {
+    // Caso real: "Julian" x "Zulian". Trocar aqui esconderia o cadastro
+    // divergente e o documento sairia com um nome que o usuário não vê.
+    expect(nomeContatoCompleto({ contatoNome: 'Alcides Julian Jr.', sindicoNome: 'Alcides Zulian Jr.' }))
+      .toBe('Alcides Julian Jr.');
   });
 
   it('respeita o contato quando é outra pessoa, não o síndico', () => {
@@ -31,8 +43,33 @@ describe('nomeContatoCompleto', () => {
     expect(nomeContatoCompleto({ contatoNome: null, sindicoNome: undefined })).toBe('');
   });
 
-  it('ignora diferença de caixa e espaços extras ao comparar', () => {
-    expect(nomeContatoCompleto({ contatoNome: '  thiago ', sindicoNome: 'Thiago Almeida Costa' }))
+  it('ignora caixa e espaços extras', () => {
+    expect(nomeContatoCompleto({ contatoNome: '  thiago ', sindicoNome: 'Thiago  Almeida   Costa' }))
       .toBe('Thiago Almeida Costa');
+  });
+});
+
+describe('nomesProvavelmenteDivergentes', () => {
+  it('acusa divergência de grafia na mesma pessoa', () => {
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Alcides Julian Jr.', sindicoNome: 'Alcides Zulian Jr.' }))
+      .toBe(true);
+  });
+
+  it('não acusa quando é só abreviação', () => {
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Thiago', sindicoNome: 'Thiago Almeida Costa' }))
+      .toBe(false);
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Alcides Jr.', sindicoNome: 'Alcides Zulian Jr.' }))
+      .toBe(false);
+  });
+
+  it('não acusa quando são pessoas diferentes', () => {
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Maria Souza', sindicoNome: 'João Lima' }))
+      .toBe(false);
+  });
+
+  it('não acusa nomes iguais nem campos vazios', () => {
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Ana Paula', sindicoNome: 'ana paula' })).toBe(false);
+    expect(nomesProvavelmenteDivergentes({ contatoNome: '', sindicoNome: 'Ana Paula' })).toBe(false);
+    expect(nomesProvavelmenteDivergentes({ contatoNome: 'Ana Paula', sindicoNome: null })).toBe(false);
   });
 });
