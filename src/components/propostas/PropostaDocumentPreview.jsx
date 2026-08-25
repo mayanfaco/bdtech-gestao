@@ -87,12 +87,15 @@ export function PropostaDocumentPreview({ proposal, client, contact, settings })
   const docCliente = client?.cpf_cnpj || client?.cnpj || null;
   const clienteIdentificacao = [razaoSocial, docCliente].filter(Boolean).join(' · ');
 
-  // A/C — a quem a proposta é dirigida (ver nomeContatoCompleto: o contato
-  // principal do cadastro costuma vir abreviado, e o documento formal precisa
-  // do nome completo do síndico quando é a mesma pessoa).
-  const contatoCargo = contact?.cargo || client?.contato_cargo || '';
+  // A/C — a quem a proposta é dirigida. A fonte é o contato principal do
+  // CADASTRO DO CLIENTE, que é o único editável na interface. O contato de
+  // client_contacts (legado, sem tela de edição desde que a aba "Contatos"
+  // saiu) entra apenas como fallback para propostas antigas de clientes que
+  // não têm contato principal preenchido — assim nada fica em branco, e um
+  // registro que o usuário não consegue corrigir nunca vence o que ele edita.
+  const contatoCargo = client?.contato_cargo || contact?.cargo || '';
   const acNome = nomeContatoCompleto({
-    contatoNome: contact?.nome || client?.contato_nome,
+    contatoNome: client?.contato_nome || contact?.nome,
     sindicoNome: client?.sindico_nome,
   });
   const acLabel = acNome ? `${acNome}${contatoCargo ? ` — ${contatoCargo}` : ''}` : '—';

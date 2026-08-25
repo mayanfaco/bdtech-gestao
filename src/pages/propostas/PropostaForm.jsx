@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { modelo1Calculo, modelo2Calculo, formatCurrency } from '../../lib/proposalCalculations.js';
 import { Input } from '../../design-system/components/forms/Input.jsx';
@@ -14,14 +14,8 @@ import '../../print.css';
 
 injectDocumentEditorLayoutCss();
 
-// Id sintético para o contato que vem gravado direto no cadastro do cliente
-// (cliente.contato_nome), quando ele não tem um contato próprio em client_contacts.
-// Não é uma FK real — na hora de salvar vira null, e o documento usa o contato
-// do próprio cliente como fallback.
-const INLINE_CONTACT_ID = '__inline__';
-
 const EMPTY = {
-  client_id: '', contact_id: '', servico_tipo: 'Pontual',
+  client_id: '', servico_tipo: 'Pontual',
   titulo: '', descricao: '', escopo: '', qtd_elevadores: '1', data_proposta: new Date().toISOString().slice(0, 10),
   desconto_percentual: '0', tipo_precificacao: 'modelo_fixo',
   modelo1_valor_com_desconto: '', modelo1_entrada_percentual: '50', modelo1_parcelas_restante: '1',
@@ -35,7 +29,6 @@ export default function PropostaForm() {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   const [clients, setClients] = React.useState([]);
-  const [contacts, setContacts] = React.useState([]);
   const [settings, setSettings] = React.useState(null);
   const [items, setItems] = React.useState([]);
   const [form, setForm] = React.useState({
@@ -52,27 +45,6 @@ export default function PropostaForm() {
       .then(({ data }) => setClients(data ?? []));
     supabase.from('company_settings').select('*').maybeSingle().then(({ data }) => setSettings(data));
   }, []);
-
-  // Ao trocar o cliente, carrega os contatos e já seleciona um automaticamente:
-  // o contato principal (ou o primeiro) cadastrado; se o cliente não tiver
-  // contatos separados, usa o contato principal gravado no próprio cliente.
-  React.useEffect(() => {
-    if (!form.client_id) { setContacts([]); return; }
-    supabase.from('client_contacts').select('id, nome, cargo, principal').eq('client_id', form.client_id).is('deleted_at', null)
-      .order('principal', { ascending: false })
-      .then(({ data }) => {
-        const rows = data ?? [];
-        const cliente = clients.find((c) => c.id === form.client_id);
-        const opts = [...rows];
-        if (cliente?.contato_nome && !rows.some((r) => r.nome === cliente.contato_nome)) {
-          opts.push({ id: INLINE_CONTACT_ID, nome: cliente.contato_nome, cargo: cliente.contato_cargo });
-        }
-        setContacts(opts);
-        if (!isEdit) {
-          setForm((f) => (opts.some((o) => o.id === f.contact_id) ? f : { ...f, contact_id: opts[0]?.id ?? '' }));
-        }
-      });
-  }, [form.client_id, clients, isEdit]);
 
   // Herda a quantidade de elevadores do cadastro do cliente — sem isto a
   // proposta saía sempre com "01 elevador", ignorando o que está registrado
@@ -115,7 +87,10 @@ export default function PropostaForm() {
     const { data: userData } = await supabase.auth.getUser();
     const payload = {
       client_id: form.client_id || null,
-      contact_id: (form.contact_id && form.contact_id !== INLINE_CONTACT_ID) ? form.contact_id : null,
+      // O contato do documento vem do cadastro do cliente (contato principal),
+      // que é o único editável na interface. contact_id (client_contacts) ficou
+      // como legado: propostas antigas ainda o têm, mas novas não gravam mais.
+      contact_id: null,
       servico_tipo: form.servico_tipo,
       qtd_elevadores: form.qtd_elevadores ? Number(form.qtd_elevadores) : null,
       data_proposta: form.data_proposta,
@@ -175,7 +150,9 @@ export default function PropostaForm() {
     entradaPercentual: form.modelo2_entrada_percentual, parcelasRestante: form.modelo2_parcelas_restante,
   });
   const selectedClient = clients.find((c) => c.id === form.client_id);
-  const selectedContact = contacts.find((c) => c.id === form.contact_id);
+  const contatoDoDocumento = selectedClient
+    ? [selectedClient.contato_nome, selectedClient.contato_cargo].filter(Boolean).join(' — ')
+    : '';
 
   return (
     <div className="bd-u-flex-col bd-u-gap-3">
@@ -186,8 +163,25 @@ export default function PropostaForm() {
           <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16 }}>Dados do cliente</h3>
           <Select label="Cliente / Empreendimento" required value={form.client_id} onChange={set('client_id')}
             placeholder="Selecione..." options={clients.map((c) => ({ value: c.id, label: c.nome }))} />
-          <Select label="Contato" value={form.contact_id} onChange={set('contact_id')} placeholder="Selecione..."
-            options={contacts.map((c) => ({ value: c.id, label: c.nome }))} />
+          {selectedClient && (
+            <div style={{
+              background: 'var(--bd-surface-sunken)', borderRadius: 'var(--bd-radius-md)',
+              padding: 'var(--bd-space-3) var(--bd-space-4)', fontSize: 13,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--bd-text-muted)' }}>
+                A/C da proposta
+              </div>
+              <div style={{ color: 'var(--bd-text-strong)', fontWeight: 600, marginTop: 2 }}>
+                {contatoDoDocumento || 'Cliente sem contato principal cadastrado'}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--bd-text-subtle)', marginTop: 4 }}>
+                Vem do contato principal do cliente —{' '}
+                <Link to={`/clientes/${selectedClient.id}/editar`} style={{ color: 'var(--bd-primary-600)' }}>
+                  editar cadastro
+                </Link>
+              </div>
+            </div>
+          )}
           <Input label="Quantidade de elevadores" type="number" min="0" required value={form.qtd_elevadores} onChange={set('qtd_elevadores')} />
           <div className="bd-u-grid-2 bd-u-gap-4">
             <Input label="Data da proposta" type="date" value={form.data_proposta} onChange={set('data_proposta')} />
@@ -253,7 +247,7 @@ export default function PropostaForm() {
         <PropostaDocumentPreview
           proposal={form}
           client={selectedClient}
-          contact={selectedContact}
+          contact={null}
           settings={settings}
         />
       </div>
