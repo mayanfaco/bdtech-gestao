@@ -117,6 +117,32 @@ describe('parsePropostaAvulsa', () => {
   });
 });
 
+describe('linha inteira em negrito', () => {
+  it('NÃO vira item de lista (bug: "**OBJETO**" saía como "• OBJETO*")', () => {
+    const { blocos } = parsePropostaAvulsa('**OBJETO**');
+    expect(blocos).toEqual([{ tipo: 'subtitulo', texto: 'OBJETO' }]);
+    expect(blocos.some((b) => b.tipo === 'lista')).toBe(false);
+  });
+
+  it('marcador de lista continua valendo quando há espaço', () => {
+    const { blocos } = parsePropostaAvulsa('* item um\n- item dois');
+    expect(blocos[0]).toEqual({ tipo: 'lista', numerada: false, itens: ['item um', 'item dois'] });
+  });
+
+  it('negrito no meio da linha continua sendo parágrafo', () => {
+    // Com uma seção antes, para a linha não ser lida como título do preâmbulo.
+    const { blocos } = parsePropostaAvulsa('1. INVESTIMENTO\n\nO valor é **R$ 100** hoje.');
+    const paragrafo = blocos.find((b) => b.tipo === 'paragrafo');
+    expect(paragrafo.texto).toBe('O valor é **R$ 100** hoje.');
+    expect(blocos.some((b) => b.tipo === 'subtitulo')).toBe(false);
+  });
+
+  it('mantém a marcação no título de seção para o documento formatar', () => {
+    const { blocos } = parsePropostaAvulsa('1. **OBJETO**');
+    expect(blocos[0]).toEqual({ tipo: 'secao', numero: '1', titulo: '**OBJETO**' });
+  });
+});
+
 describe('parseInline', () => {
   it('reconhece negrito e itálico no meio do texto', () => {
     expect(parseInline('Valor **R$ 100** por *unidade* hoje')).toEqual([

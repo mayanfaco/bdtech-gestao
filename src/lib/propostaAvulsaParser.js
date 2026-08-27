@@ -33,7 +33,11 @@ const RE_SECAO = /^(\d{1,2})\s*[.)-]\s*(.+)$/;
 // Negrito **assim** e itálico *assim*. Só asteriscos: "_" apareceria dentro de
 // placeholders como "[____]" e viraria formatação por acidente.
 const RE_INLINE = /(\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g;
-const RE_ITEM = /^[*\-•–]\s*(.+)$/;
+// Exige espaço depois do marcador: sem isso "**OBJETO**" (negrito na linha
+// toda) era lido como item de lista, virando "• OBJETO*" em itálico.
+const RE_ITEM = /^[*\-•–][ \t]+(.+)$/;
+// Linha inteira em negrito: o usuário está destacando um título sem numerar.
+const RE_SUBTITULO = /^\*\*(.+?)\*\*$/;
 const RE_CAMPO = /^(À|A|A\/C|AC|Data|Ref|Refer[êe]ncia|Cliente|Contato|Local)\s*:\s*(.*)$/i;
 const RE_FECHAMENTO = /^(atenciosamente|cordialmente|respeitosamente|sem mais)[,.!]?$/i;
 
@@ -113,6 +117,13 @@ export function parsePropostaAvulsa(texto) {
       continue;
     }
     if (RE_FECHAMENTO.test(linha)) { fechaTudo(); emAssinatura = true; continue; }
+
+    const subtitulo2 = linha.match(RE_SUBTITULO);
+    if (subtitulo2) {
+      fechaTudo();
+      blocos.push({ tipo: 'subtitulo', texto: subtitulo2[1].trim() });
+      continue;
+    }
 
     const secao = linha.match(RE_SECAO);
     if (secao) {

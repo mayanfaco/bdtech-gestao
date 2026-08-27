@@ -45,11 +45,22 @@ export function PropostaAvulsaToolbar({ textareaRef, valor, onChange }) {
 
   // Envolve a seleção em marcadores. Sem seleção, insere os marcadores e
   // deixa o cursor no meio, pronto para digitar.
+  //
+  // Seleção com várias linhas é marcada linha por linha: o documento é lido
+  // linha a linha, então um "**" aberto numa linha e fechado noutra não
+  // formataria nada — os asteriscos apareceriam no texto.
   const envolver = (marca) => () => aplicar(({ antes, selecionado, depois, inicio }) => {
     const conteudo = selecionado || 'texto';
+    const marcado = conteudo.includes('\n')
+      ? conteudo.split('\n')
+        .map((linha) => (linha.trim() ? `${marca}${linha.trim()}${marca}` : linha))
+        .join('\n')
+      : `${marca}${conteudo}${marca}`;
     return {
-      texto: `${antes}${marca}${conteudo}${marca}${depois}`,
-      selecao: [inicio + marca.length, inicio + marca.length + conteudo.length],
+      texto: `${antes}${marcado}${depois}`,
+      selecao: selecionado
+        ? [inicio, inicio + marcado.length]
+        : [inicio + marca.length, inicio + marca.length + conteudo.length],
     };
   });
 

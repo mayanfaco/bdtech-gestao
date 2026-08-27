@@ -89,9 +89,19 @@ export function PropostaAvulsaDocument({ texto, settings }) {
                 fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 19,
                 color: 'var(--bd-navy-900)', margin: 0,
               }}>
-                {bloco.titulo}
+                <Formatado texto={bloco.titulo} />
               </h2>
             </div>
+          );
+        }
+        if (bloco.tipo === 'subtitulo') {
+          return (
+            <h3 key={i} style={{
+              fontFamily: 'var(--bd-font-display)', fontWeight: 700, fontSize: 15,
+              color: 'var(--bd-navy-900)', margin: 'var(--bd-space-5) 0 var(--bd-space-2)',
+            }}>
+              <Formatado texto={bloco.texto} />
+            </h3>
           );
         }
         if (bloco.tipo === 'lista') {
