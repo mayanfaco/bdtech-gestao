@@ -121,7 +121,10 @@ export default function PropostasList() {
           <Select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setActiveGroup(null); }}
             placeholder="Todos os status" options={Object.entries(PROPOSAL_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
         </div>
-        <Button as={Link} to="/propostas/nova">Nova proposta</Button>
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-3">
+          <Button variant="outline" as={Link} to="/propostas/avulsas">Propostas avulsas</Button>
+          <Button as={Link} to="/propostas/nova">Nova proposta</Button>
+        </div>
       </div>
 
       {!modoDropdown && (

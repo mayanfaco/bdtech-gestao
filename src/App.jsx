@@ -29,6 +29,9 @@ import TarefaDetail from './pages/tarefas/TarefaDetail.jsx';
 // de versão, assinatura, configurações administrativas, busca, notificações)
 // não precisam entrar no bundle inicial de todo mundo.
 const PropostaVersoes = lazy(() => import('./pages/propostas/PropostaVersoes.jsx'));
+const PropostasAvulsasList = lazy(() => import('./pages/propostas/PropostasAvulsasList.jsx'));
+const PropostaAvulsaForm = lazy(() => import('./pages/propostas/PropostaAvulsaForm.jsx'));
+const PropostaAvulsaPrint = lazy(() => import('./pages/propostas/PropostaAvulsaPrint.jsx'));
 const ContratoAssinatura = lazy(() => import('./pages/contratos/ContratoAssinatura.jsx'));
 const Configuracoes = lazy(() => import('./pages/configuracoes/Configuracoes.jsx'));
 const GoogleCalendarConfig = lazy(() => import('./pages/configuracoes/GoogleCalendarConfig.jsx'));
@@ -50,6 +53,7 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Rotas de impressão: protegidas, mas sem sidebar/topbar */}
+          <Route path="/propostas/avulsas/:id/pdf" element={<ProtectedRoute><PropostaAvulsaPrint /></ProtectedRoute>} />
           <Route path="/propostas/:id/pdf" element={<ProtectedRoute><PropostaPrint /></ProtectedRoute>} />
           <Route path="/contratos/:id/pdf" element={<ProtectedRoute><ContratoPrint /></ProtectedRoute>} />
 
@@ -73,6 +77,10 @@ function App() {
 
             <Route path="propostas" element={<PropostasList />} />
             <Route path="propostas/nova" element={<PropostaForm />} />
+            {/* Antes de "propostas/:id" para "avulsas" não ser lido como id. */}
+            <Route path="propostas/avulsas" element={<PropostasAvulsasList />} />
+            <Route path="propostas/avulsas/nova" element={<PropostaAvulsaForm />} />
+            <Route path="propostas/avulsas/:id/editar" element={<PropostaAvulsaForm />} />
             <Route path="propostas/:id" element={<PropostaDetail />} />
             <Route path="propostas/:id/editar" element={<PropostaForm />} />
             <Route path="propostas/:id/versoes" element={<PropostaVersoes />} />

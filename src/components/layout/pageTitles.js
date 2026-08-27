@@ -4,6 +4,8 @@
 // com data router.
 const TITLES = [
   { prefix: '/clientes', title: 'Clientes' },
+  // Mais específico primeiro: /propostas/avulsas não deve casar com /propostas.
+  { prefix: '/propostas/avulsas', title: 'Propostas avulsas' },
   { prefix: '/propostas', title: 'Propostas' },
   { prefix: '/contratos', title: 'Contratos' },
   { prefix: '/calendario', title: 'Calendário' },
