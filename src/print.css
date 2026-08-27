@@ -45,6 +45,29 @@
      Comerciais") ficando sozinho no fim de uma página, separado do
      conteúdo que ele apresenta. */
   .bd-print-page h2 { break-after: avoid; }
+
+  /* Proposta avulsa: o texto é livre e bem menor que o da proposta padrão
+     (que tem 5 seções fixas + duas tabelas de preço e precisa da compactação
+     acima). Aqui o documento pode respirar: fonte e espaçamento maiores
+     distribuem o conteúdo pelas duas páginas, em vez de comprimir tudo na
+     primeira e deixar a assinatura sozinha na segunda. */
+  .bd-print-page--folgado {
+    --bd-space-12: 12px;
+    --bd-space-10: 10px;
+    --bd-space-8:  10px;
+    --bd-space-6:  9px;
+    --bd-space-5:  8px;
+    --bd-space-4:  7px;
+    --bd-space-3:  5px;
+  }
+  .bd-print-page--folgado h1 { font-size: 20px !important; margin: 5px 0 0 !important; }
+  .bd-print-page--folgado h2 { font-size: 15px !important; }
+  .bd-print-page--folgado h3 { font-size: 13px !important; }
+  .bd-print-page--folgado p  { font-size: 11.2px !important; line-height: 1.42 !important; }
+  .bd-print-page--folgado li { font-size: 11.2px !important; line-height: 1.38 !important; }
+  .bd-print-page--folgado ul,
+  .bd-print-page--folgado ol { margin-top: 4px !important; }
+  .bd-print-page--folgado .bd-doc-sign-line { height: 96px !important; }
 }
 
 .bd-print-page {

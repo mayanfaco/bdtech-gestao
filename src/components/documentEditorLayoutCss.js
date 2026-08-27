@@ -14,6 +14,17 @@ const CSS = `
 
 .bd-doc-editor__preview{flex:1;min-width:0;background:var(--bd-neutral-200);border-radius:var(--bd-radius-lg);padding:var(--bd-space-6);}
 
+/* Modo foco: esconde a prévia e dá a largura toda ao editor de texto, para
+   escrever/revisar textos longos com folga. */
+.bd-doc-editor--foco .bd-doc-editor__form{flex:1 1 auto;max-width:none;}
+.bd-doc-editor--foco .bd-doc-editor__preview{display:none;}
+
+/* Editor que preenche a altura do painel e rola por conta própria — assim o
+   campo de texto fica grande e o painel inteiro não precisa rolar. */
+.bd-doc-editor__form--editor{gap:var(--bd-space-3);}
+.bd-doc-editor__fill{flex:1 1 auto;min-height:180px;display:flex;}
+.bd-doc-editor__fill textarea{flex:1 1 auto;height:100%;resize:none;}
+
 @media (max-width: 1024px) {
   .bd-doc-editor{flex-direction:column;}
   .bd-doc-editor__form{flex:1 1 auto;max-width:none;width:100%;position:static;max-height:none;}

@@ -26,7 +26,7 @@ export function PropostaAvulsaDocument({ texto, settings }) {
   const temCabecalho = titulo || subtitulo || campos.length > 0;
 
   return (
-    <div className="bd-print-page">
+    <div className="bd-print-page bd-print-page--folgado">
       <header className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginBottom: 'var(--bd-space-5)' }}>
         <img src={logotypeNavy} alt="BDTECH" style={{ height: 32, width: 'auto' }} />
         <div style={{ textAlign: 'right', fontSize: 12 }}>
