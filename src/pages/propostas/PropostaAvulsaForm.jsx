@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { tituloResumido } from '../../lib/propostaAvulsaParser.js';
+import { mensagemDeErro } from '../../lib/supabaseErros.js';
 import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
@@ -54,7 +55,7 @@ export default function PropostaAvulsaForm() {
   React.useEffect(() => {
     if (!isEdit) return;
     supabase.from('standalone_proposals').select('*').eq('id', id).single().then(({ data, error: err }) => {
-      if (err) setError(err.message);
+      if (err) setError(mensagemDeErro(err, { migration: '0009_standalone_proposals.sql' }));
       if (data) setTexto(data.corpo ?? '');
       setLoading(false);
     });
@@ -74,7 +75,10 @@ export default function PropostaAvulsaForm() {
       : await supabase.from('standalone_proposals').insert({ ...payload, created_by: userData.user.id }).select().single();
 
     setSaving(false);
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) {
+      setError(mensagemDeErro(result.error, { migration: '0009_standalone_proposals.sql' }));
+      return;
+    }
     navigate(`/propostas/avulsas/${result.data.id}/editar`, { replace: true });
   }
 

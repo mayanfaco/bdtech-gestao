@@ -5,6 +5,8 @@ import { EmptyState } from '../../components/EmptyState.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { Alert } from '../../design-system/components/feedback/Alert.jsx';
+import { mensagemDeErro } from '../../lib/supabaseErros.js';
 import { IconButton } from '../../design-system/components/buttons/IconButton.jsx';
 import { I } from '../../components/layout/icons.jsx';
 
@@ -12,11 +14,18 @@ const label = (p) => `PROP-AV-${new Date(p.created_at).getFullYear()}-${String(p
 
 export default function PropostasAvulsasList() {
   const [propostas, setPropostas] = React.useState(null);
+  const [error, setError] = React.useState('');
 
   const load = React.useCallback(() => {
     supabase.from('standalone_proposals').select('*').is('deleted_at', null)
       .order('created_at', { ascending: false })
-      .then(({ data }) => setPropostas(data ?? []));
+      .then(({ data, error: err }) => {
+        // Sem isto, uma falha de leitura (ex.: migration não rodada) virava
+        // uma lista vazia — a tela dizia "nenhuma proposta" como se estivesse
+        // tudo certo.
+        if (err) setError(mensagemDeErro(err, { migration: '0009_standalone_proposals.sql' }));
+        setPropostas(data ?? []);
+      });
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
@@ -47,7 +56,9 @@ export default function PropostasAvulsasList() {
         <Button as={Link} to="/propostas/avulsas/nova">Nova proposta avulsa</Button>
       </div>
 
-      {propostas.length === 0 ? (
+      {error && <Alert tone="danger">{error}</Alert>}
+
+      {error ? null : propostas.length === 0 ? (
         <EmptyState
           title="Nenhuma proposta avulsa ainda"
           text="Use este espaço para propostas de serviços específicos — laudos, avaliações, pareceres — colando o texto pronto."
