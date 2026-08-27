@@ -30,12 +30,45 @@ const PADROES_ASSINATURA_REDUNDANTE = [
 ];
 
 const RE_SECAO = /^(\d{1,2})\s*[.)-]\s*(.+)$/;
+// Negrito **assim** e itálico *assim*. Só asteriscos: "_" apareceria dentro de
+// placeholders como "[____]" e viraria formatação por acidente.
+const RE_INLINE = /(\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g;
 const RE_ITEM = /^[*\-•–]\s*(.+)$/;
 const RE_CAMPO = /^(À|A|A\/C|AC|Data|Ref|Refer[êe]ncia|Cliente|Contato|Local)\s*:\s*(.*)$/i;
 const RE_FECHAMENTO = /^(atenciosamente|cordialmente|respeitosamente|sem mais)[,.!]?$/i;
 
 const ehEmpresa = (linha) => PADROES_EMPRESA.some((re) => re.test(linha));
 const ehAssinaturaRedundante = (linha) => PADROES_ASSINATURA_REDUNDANTE.some((re) => re.test(linha));
+
+/**
+ * Quebra um texto em pedaços com e sem formatação, para o componente montar
+ * <strong>/<em> como elementos React — nunca HTML injetado.
+ * "Valor **R$ 100** hoje" -> [texto, negrito, texto]
+ */
+export function parseInline(texto) {
+  const bruto = String(texto ?? '');
+  if (!bruto) return [];
+  return bruto.split(RE_INLINE).filter((p) => p !== '').map((parte) => {
+    if (parte.startsWith('**') && parte.endsWith('**') && parte.length > 4) {
+      return { tipo: 'negrito', valor: parte.slice(2, -2) };
+    }
+    if (parte.startsWith('*') && parte.endsWith('*') && parte.length > 2) {
+      return { tipo: 'italico', valor: parte.slice(1, -1) };
+    }
+    return { tipo: 'texto', valor: parte };
+  });
+}
+
+/**
+ * Distingue título de seção ("1. OBJETO") de item de lista numerada
+ * ("1. primeiro item"): títulos de seção são escritos em maiúsculas.
+ */
+function ehTituloDeSecao(texto) {
+  const letras = texto.replace(/[^\p{L}]/gu, '');
+  if (letras.length < 2) return false;
+  const maiusculas = [...letras].filter((c) => c === c.toLocaleUpperCase('pt-BR') && c !== c.toLocaleLowerCase('pt-BR')).length;
+  return maiusculas / letras.length > 0.7;
+}
 
 export function parsePropostaAvulsa(texto) {
   const linhas = String(texto ?? '').split(/\r?\n/);
@@ -50,9 +83,11 @@ export function parsePropostaAvulsa(texto) {
   let lista = null;
   let paragrafo = null;
 
+  let listaNumerada = false;
   const fechaLista = () => {
-    if (lista?.length) blocos.push({ tipo: 'lista', itens: lista });
+    if (lista?.length) blocos.push({ tipo: 'lista', numerada: listaNumerada, itens: lista });
     lista = null;
+    listaNumerada = false;
   };
   const fechaParagrafo = () => {
     if (paragrafo?.length) blocos.push({ tipo: 'paragrafo', texto: paragrafo.join(' ') });
@@ -81,8 +116,16 @@ export function parsePropostaAvulsa(texto) {
 
     const secao = linha.match(RE_SECAO);
     if (secao) {
-      fechaTudo();
-      blocos.push({ tipo: 'secao', numero: secao[1], titulo: secao[2].trim() });
+      const titulo = secao[2].trim();
+      if (ehTituloDeSecao(titulo)) {
+        fechaTudo();
+        blocos.push({ tipo: 'secao', numero: secao[1], titulo });
+        continue;
+      }
+      // Numerada com texto normal: é item de lista, não título de seção.
+      fechaParagrafo();
+      if (!lista) { lista = []; listaNumerada = true; }
+      lista.push(titulo);
       continue;
     }
 

@@ -7,6 +7,7 @@ import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { PropostaAvulsaDocument } from '../../components/propostas/PropostaAvulsaDocument.jsx';
+import { PropostaAvulsaToolbar } from '../../components/propostas/PropostaAvulsaToolbar.jsx';
 import { injectDocumentEditorLayoutCss } from '../../components/documentEditorLayoutCss.js';
 import { BackButton } from '../../components/BackButton.jsx';
 import '../../print.css';
@@ -43,6 +44,7 @@ export default function PropostaAvulsaForm() {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   const [texto, setTexto] = React.useState('');
+  const textareaRef = React.useRef(null);
   const [settings, setSettings] = React.useState(null);
   const [loading, setLoading] = React.useState(isEdit);
   const [saving, setSaving] = React.useState(false);
@@ -95,10 +97,12 @@ export default function PropostaAvulsaForm() {
               Cole o texto e o documento ao lado se monta com a identidade da BDTECH. Pode editar
               aqui a qualquer momento — o documento acompanha.
             </p>
+            <PropostaAvulsaToolbar textareaRef={textareaRef} valor={texto} onChange={setTexto} />
             <Textarea
+              ref={textareaRef}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
-              rows={26}
+              rows={24}
               placeholder="Cole aqui o texto da proposta..."
               style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12.5, lineHeight: 1.5 }}
             />
@@ -109,9 +113,12 @@ export default function PropostaAvulsaForm() {
               </Button>
             )}
             <div style={{ fontSize: 12, color: 'var(--bd-text-subtle)', lineHeight: 1.6 }}>
-              <strong>O que o sistema reconhece:</strong><br />
-              &bull; <code>1. OBJETO</code> vira título de seção<br />
-              &bull; linhas com <code>*</code> ou <code>-</code> viram lista<br />
+              <strong>Formatação:</strong> selecione o texto e use os botões acima.
+              Negrito fica <code>**assim**</code> e itálico <code>*assim*</code>.<br />
+              <strong>Estrutura reconhecida:</strong><br />
+              &bull; <code>1. OBJETO</code> (em maiúsculas) vira título de seção<br />
+              &bull; <code>1. primeiro item</code> (texto normal) vira lista numerada<br />
+              &bull; linhas com <code>*</code> ou <code>-</code> viram lista com marcadores<br />
               &bull; <code>À:</code>, <code>A/C:</code>, <code>Data:</code> viram o cabeçalho do documento<br />
               &bull; a partir de <code>Atenciosamente,</code> vira assinatura<br />
               O nome do engenheiro, CREA e a marca já entram automaticamente.

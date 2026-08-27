@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePropostaAvulsa, tituloResumido } from './propostaAvulsaParser.js';
+import { parsePropostaAvulsa, tituloResumido, parseInline } from './propostaAvulsaParser.js';
 
 // Recorte do texto real que a BDTECH usa, incluindo o cabeçalho repetido da
 // empresa, os campos do destinatário, seções numeradas, listas e assinatura.
@@ -114,6 +114,59 @@ describe('parsePropostaAvulsa', () => {
     expect(vazio.campos).toEqual([]);
     expect(vazio.titulo).toBeNull();
     expect(parsePropostaAvulsa(null).blocos).toEqual([]);
+  });
+});
+
+describe('parseInline', () => {
+  it('reconhece negrito e itálico no meio do texto', () => {
+    expect(parseInline('Valor **R$ 100** por *unidade* hoje')).toEqual([
+      { tipo: 'texto', valor: 'Valor ' },
+      { tipo: 'negrito', valor: 'R$ 100' },
+      { tipo: 'texto', valor: ' por ' },
+      { tipo: 'italico', valor: 'unidade' },
+      { tipo: 'texto', valor: ' hoje' },
+    ]);
+  });
+
+  it('não estraga placeholders com underscore', () => {
+    // "_" não é marcador justamente por causa de "[____]".
+    expect(parseInline('CREA-CE nº [____]')).toEqual([{ tipo: 'texto', valor: 'CREA-CE nº [____]' }]);
+  });
+
+  it('ignora asterisco solto ou com espaço, que não é formatação', () => {
+    expect(parseInline('2 * 3 = 6')).toEqual([{ tipo: 'texto', valor: '2 * 3 = 6' }]);
+  });
+
+  it('devolve lista vazia para texto vazio', () => {
+    expect(parseInline('')).toEqual([]);
+    expect(parseInline(null)).toEqual([]);
+  });
+});
+
+describe('listas numeradas x títulos de seção', () => {
+  it('trata "1. OBJETO" (maiúsculas) como seção', () => {
+    const { blocos } = parsePropostaAvulsa('1. OBJETO\n\nTexto qualquer.');
+    expect(blocos[0]).toEqual({ tipo: 'secao', numero: '1', titulo: 'OBJETO' });
+  });
+
+  it('trata linhas numeradas com texto normal como lista numerada', () => {
+    const { blocos } = parsePropostaAvulsa('1. ESCOPO\n\n1. primeiro passo\n2. segundo passo');
+    const lista = blocos.find((b) => b.tipo === 'lista');
+    expect(lista.numerada).toBe(true);
+    expect(lista.itens).toEqual(['primeiro passo', 'segundo passo']);
+    // O título em maiúsculas continua sendo seção.
+    expect(blocos[0].tipo).toBe('secao');
+  });
+
+  it('marca lista com bullets como não numerada', () => {
+    const { blocos } = parsePropostaAvulsa('1. ESCOPO\n\n* um\n* dois');
+    expect(blocos.find((b) => b.tipo === 'lista').numerada).toBe(false);
+  });
+
+  it('reconhece seção com acentos em maiúsculas', () => {
+    const { blocos } = parsePropostaAvulsa('7. CONDIÇÕES DE PAGAMENTO\n\nTexto.');
+    expect(blocos[0].titulo).toBe('CONDIÇÕES DE PAGAMENTO');
+    expect(blocos[0].tipo).toBe('secao');
   });
 });
 

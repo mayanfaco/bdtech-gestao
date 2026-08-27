@@ -1,9 +1,18 @@
 import React from 'react';
-import { parsePropostaAvulsa } from '../../lib/propostaAvulsaParser.js';
+import { parsePropostaAvulsa, parseInline } from '../../lib/propostaAvulsaParser.js';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import logotypeNavy from '../../design-system/assets/brand/bdtech-logotype-navy.svg';
 
 const COMPANY_PHONE = '(85) 9.9698-5607';
+
+/** Negrito/itálico como elementos React — nada de HTML injetado. */
+function Formatado({ texto }) {
+  return parseInline(texto).map((t, i) => {
+    if (t.tipo === 'negrito') return <strong key={i}>{t.valor}</strong>;
+    if (t.tipo === 'italico') return <em key={i}>{t.valor}</em>;
+    return <React.Fragment key={i}>{t.valor}</React.Fragment>;
+  });
+}
 
 /**
  * Documento de proposta avulsa: o texto colado pelo usuário, renderizado com a
@@ -86,20 +95,21 @@ export function PropostaAvulsaDocument({ texto, settings }) {
           );
         }
         if (bloco.tipo === 'lista') {
+          const Tag = bloco.numerada ? 'ol' : 'ul';
           return (
-            <ul key={i} style={{
+            <Tag key={i} style={{
               fontSize: 14, lineHeight: 1.7, color: 'var(--bd-text-body)', paddingLeft: 20,
               margin: '0 0 var(--bd-space-3)',
             }}>
-              {bloco.itens.map((item, j) => <li key={j}>{item}</li>)}
-            </ul>
+              {bloco.itens.map((item, j) => <li key={j}><Formatado texto={item} /></li>)}
+            </Tag>
           );
         }
         return (
           <p key={i} style={{
             fontSize: 14, lineHeight: 1.7, color: 'var(--bd-text-body)', margin: '0 0 var(--bd-space-3)',
           }}>
-            {bloco.texto}
+            <Formatado texto={bloco.texto} />
           </p>
         );
       })}
