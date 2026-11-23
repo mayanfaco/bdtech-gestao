@@ -4,13 +4,15 @@ import { Sidebar, SIDEBAR_WIDTH_PX } from './Sidebar.jsx';
 import { Topbar } from './Topbar.jsx';
 import { ErrorBoundary } from '../ErrorBoundary.jsx';
 import { getPageTitle } from './pageTitles.js';
+import { TutorialProvider } from '../../lib/tutorial.jsx';
+import { AjudaFlutuante } from '../funis/AjudaFlutuante.jsx';
 
 const CSS = `
 .bd-appshell__content{margin-left:${SIDEBAR_WIDTH_PX}px;min-height:100vh;}
-.bd-appshell__main{padding:var(--bd-space-8);flex:1;min-width:0;}
+.bd-appshell__main{padding:var(--bd-space-8);padding-bottom:110px;flex:1;min-width:0;}
 @media (max-width: 900px) {
   .bd-appshell__content{margin-left:0;}
-  .bd-appshell__main{padding:var(--bd-space-5);}
+  .bd-appshell__main{padding:var(--bd-space-5);padding-bottom:96px;}
 }
 `;
 if (typeof document !== 'undefined' && !document.getElementById('bd-appshell-css')) {
@@ -26,6 +28,7 @@ export function AppShell() {
   React.useEffect(() => { setNavOpen(false); }, [location.pathname]);
 
   return (
+    <TutorialProvider>
     <div style={{ minHeight: '100vh' }}>
       <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
       <div className="bd-u-flex-col bd-appshell__content">
@@ -36,6 +39,8 @@ export function AppShell() {
           </ErrorBoundary>
         </main>
       </div>
+      <AjudaFlutuante />
     </div>
+    </TutorialProvider>
   );
 }

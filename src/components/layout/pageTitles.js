@@ -11,10 +11,15 @@ const TITLES = [
   { prefix: '/calendario', title: 'Calendário' },
   { prefix: '/tarefas', title: 'Tarefas' },
   { prefix: '/configuracoes', title: 'Configurações' },
+  { prefix: '/funis', title: 'Funis' },
+  { prefix: '/onde-prospectar', title: 'Onde prospectar' },
+  { prefix: '/guia', title: 'Guia de vendas' },
+  { prefix: '/tutorial', title: 'Tutorial' },
+  { prefix: '/meu-lar', title: 'Meu Lar' },
 ];
 
 export function getPageTitle(pathname) {
-  if (pathname === '/') return 'Dashboard';
+  if (pathname === '/') return 'Início';
   const match = TITLES.find((t) => pathname.startsWith(t.prefix));
   return match?.title ?? 'BDTECH Gestão';
 }

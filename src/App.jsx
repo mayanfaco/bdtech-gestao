@@ -43,6 +43,11 @@ const AssinaturaConfig = lazy(() => import('./pages/configuracoes/AssinaturaConf
 const DadosDemoConfig = lazy(() => import('./pages/configuracoes/DadosDemoConfig.jsx'));
 const BuscaResultados = lazy(() => import('./pages/busca/BuscaResultados.jsx'));
 const NotificacoesCentro = lazy(() => import('./pages/notificacoes/NotificacoesCentro.jsx'));
+const Funis = lazy(() => import('./pages/funis/Funis.jsx'));
+const OndeProspectar = lazy(() => import('./pages/prospectar/OndeProspectar.jsx'));
+const GuiaVendas = lazy(() => import('./pages/guia/GuiaVendas.jsx'));
+const Tutorial = lazy(() => import('./pages/tutorial/Tutorial.jsx'));
+const MeuLar = lazy(() => import('./pages/lar/MeuLar.jsx'));
 
 function App() {
   return (
@@ -110,6 +115,13 @@ function App() {
             <Route path="configuracoes/integracoes/google-calendar" element={<GoogleCalendarConfig />} />
             <Route path="configuracoes/integracoes/assinatura" element={<AssinaturaConfig />} />
             <Route path="configuracoes/dados-demo" element={<DadosDemoConfig />} />
+
+            <Route path="funis" element={<Funis />} />
+            <Route path="funis/:aba" element={<Funis />} />
+            <Route path="onde-prospectar" element={<OndeProspectar />} />
+            <Route path="guia" element={<GuiaVendas />} />
+            <Route path="tutorial" element={<Tutorial />} />
+            <Route path="meu-lar" element={<MeuLar />} />
 
             <Route path="busca" element={<BuscaResultados />} />
             <Route path="notificacoes" element={<NotificacoesCentro />} />
