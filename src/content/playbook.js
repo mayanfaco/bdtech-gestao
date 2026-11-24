@@ -53,6 +53,7 @@ export const PLAYBOOK = [
       'Arraste o cartão (ou use os botões) quando a proposta andar.',
       'Proposta parada 2 dias entra no Follow-up automaticamente.',
       'Fechou? Clique "Fechou!". A família comemora no Meu Lar.',
+      'Cliente pediu para falar depois (mês que vem, ano que vem)? Clique "Retomar depois": o cartão volta sozinho na data.',
       'Não fechou? Anote o motivo. Isso ensina para a próxima.',
     ],
     regra: 'Proposta sem data de retorno é proposta esquecida. Sempre combine o próximo passo.',

@@ -30,6 +30,7 @@ export const AJUDA = [
   { id: 'tarefas', pergunta: 'Onde vejo minhas tarefas?', palavras: 'tarefas afazeres pendencias lembrete fazer', resposta: 'No menu Tarefas. O sistema também cria tarefas sozinho, por exemplo depois de enviar uma proposta.', rota: '/tarefas', botao: 'Ver tarefas' },
   { id: 'avisos', pergunta: 'Onde vejo os avisos do sistema?', palavras: 'avisos notificacoes sininho alertas', resposta: 'Clique no sininho no alto da tela. Todo dia aparece um aviso com os follow-ups de hoje.', rota: '/notificacoes', botao: 'Ver avisos' },
   { id: 'mudar-dias', pergunta: 'Quero mudar os dias do follow-up', palavras: 'mudar dias prazo cadencia configurar automacao tempo', resposta: 'Em Configurações → Automações você muda os dias de cada toque.', rota: '/configuracoes/automacoes', botao: 'Abrir Automações' },
+  { id: 'retomar-depois', pergunta: 'O cliente pediu para falar só mês que vem ou ano que vem', palavras: 'depois proximo ano mes que vem adiar retomar mais tarde lembrar data combinado guardar agendar', resposta: 'Em qualquer cartão dos funis, clique em "⏰ Retomar depois" e escolha quando (1 mês, 3 meses, 6 meses, próximo ano ou uma data). O cartão sai da frente e volta sozinho, destacado em amarelo, no dia combinado.', rota: '/funis/vendas', botao: 'Abrir os funis' },
   { id: 'geladeira', pergunta: 'O que é a "geladeira"?', palavras: 'geladeira congelado descansando 60 dias voltar depois', resposta: 'Quem não respondeu nenhum dos 6 toques descansa 60 dias. Depois o sistema devolve para a prospecção para uma nova tentativa.', rota: '/funis/prospeccao', botao: 'Abrir a Prospecção' },
 ];
 
@@ -70,4 +71,4 @@ export function buscarAjuda(consulta, limite = 3) {
     .map((r) => r.item);
 }
 
-export const AJUDA_RAPIDA = ['followup-hoje', 'cadastrar-contato', 'quem-mandei', 'fechou', 'scripts'];
+export const AJUDA_RAPIDA = ['followup-hoje', 'cadastrar-contato', 'quem-mandei', 'retomar-depois', 'fechou', 'scripts'];
