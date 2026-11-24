@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { VENDAS_ETAPAS, etapaDeVenda, valorDaProposta, proximoToque, TOQUES } from '../../lib/funis.js';
+import { VENDAS_ETAPAS, etapaDeVenda, valorDaProposta, proximoToque, TOQUES, estaAdiado, voltouParaAtencao } from '../../lib/funis.js';
 import { formatCurrency } from '../../lib/proposalCalculations.js';
 import { Quadro, pararArraste } from '../../components/funis/Quadro.jsx';
 import { Explicacao, SeletorVisao, useVisao, Barras, Pizza, Modal, Confete } from '../../components/funis/ui.jsx';
-import { atualizarProposta } from './useFunisDados.js';
+import { atualizarProposta, guardarParaDepois, retomarAgora } from './useFunisDados.js';
+import { BotaoRetomar, SeloVoltou, ModalRetomar, ModalGuardados } from '../../components/funis/Retomar.jsx';
 import { ModalMotivo } from './modais.jsx';
 
 const DIAS_FECHADAS_NO_QUADRO = 60;
@@ -19,9 +20,11 @@ export function Vendas({ dados, recarregar, avisar }) {
   const propostas = dados.propostas.filter((p) => {
     const etapa = etapaDeVenda(p.status);
     if (!etapa || etapa === 'nao_fechou') return false;
+    if (estaAdiado(p)) return false;
     if (etapa === 'fechou') return new Date(p.status_changed_at ?? p.created_at).getTime() >= limiteFechadas;
     return true;
   });
+  const guardadas = dados.propostas.filter((p) => estaAdiado(p) && !['fechou', 'nao_fechou'].includes(etapaDeVenda(p.status)));
   const naoFecharam = dados.propostas.filter((p) => etapaDeVenda(p.status) === 'nao_fechou').length;
   const emAberto = propostas.filter((p) => ['enviada', 'negociando'].includes(etapaDeVenda(p.status)));
   const valorAberto = emAberto.reduce((s, p) => s + valorDaProposta(p), 0);
@@ -51,6 +54,7 @@ export function Vendas({ dados, recarregar, avisar }) {
     const toque = proximoToque(p, dados.cadencia);
     return (
       <>
+        {voltouParaAtencao(p) && <SeloVoltou item={p} />}
         <button type="button" className="fx-card__nome" {...pararArraste} onClick={() => navigate(`/propostas/${p.id}`)}>{p.clients?.nome || p.titulo || 'Proposta'}</button>
         <div className="fx-card__sub">{valor ? formatCurrency(valor) : 'Sem valor'}{p.servico_tipo ? ` · ${p.servico_tipo}` : ''}</div>
         {toque && <span className={`fx-chip ${toque.situacao === 'atrasado' ? 'fx-chip--vermelho' : toque.situacao === 'hoje' ? 'fx-chip--amarelo' : 'fx-chip--cinza'}`}>🔁 Follow-up: {TOQUES[toque.passo - 1].nome}</span>}
@@ -64,6 +68,7 @@ export function Vendas({ dados, recarregar, avisar }) {
               <button type="button" className="fx-btn fx-btn--texto" onClick={() => setModal({ tipo: 'perdeu', proposta: p })}>Não fechou</button>
             </>
           )}
+          {etapa !== 'fechou' && <BotaoRetomar onClick={() => setModal({ tipo: 'retomar', proposta: p })} />}
         </div>
       </>
     );
@@ -88,6 +93,7 @@ export function Vendas({ dados, recarregar, avisar }) {
           <span className="fx-contador">Em negociação: <b>{formatCurrency(valorAberto)}</b></span>
           <span className="fx-contador">Fechadas este mês: <b>{fechadasMes.length}</b></span>
           <span className="fx-contador">Não fecharam: <b>{naoFecharam}</b></span>
+          <button type="button" className="fx-contador" onClick={() => setModal({ tipo: 'guardados' })}>⏰ Retomar depois: <b>{guardadas.length}</b> →</button>
         </div>
         <span className="fx-spacer" />
         <button type="button" className="fx-btn fx-btn--primario" onClick={() => navigate('/propostas/nova')}>＋ Nova proposta</button>
@@ -100,6 +106,7 @@ export function Vendas({ dados, recarregar, avisar }) {
           itens={propostas}
           colunaDe={(p) => etapaDeVenda(p.status)}
           renderCartao={cartao}
+          classeDoCartao={(p) => (voltouParaAtencao(p) ? 'fx-card--voltou' : '')}
           onMover={(p, etapa) => {
             const destino = VENDAS_ETAPAS.find((e) => e.key === etapa)?.destino;
             if (destino === 'aprovada') fechou(p); else if (destino) mudarStatus(p, destino);
@@ -142,6 +149,22 @@ export function Vendas({ dados, recarregar, avisar }) {
       )}
       {visao === 'pizza' && <Pizza titulo="Propostas por etapa" dados={porEtapa} rotuloTotal="propostas" />}
 
+      {modal?.tipo === 'retomar' && (
+        <ModalRetomar nome={modal.proposta.clients?.nome || modal.proposta.titulo || 'Este cliente'} atual={modal.proposta} onClose={() => setModal(null)}
+          onConfirmar={async (data, obs) => {
+            const erro = await guardarParaDepois(modal.proposta, 'proposta', data, obs);
+            if (erro) { avisar({ tipo: 'erro', texto: erro.message }); return; }
+            setModal(null); await recarregar();
+            avisar({ tipo: 'ok', texto: 'Guardada! A proposta volta sozinha para você na data combinada.' });
+          }} />
+      )}
+      {modal?.tipo === 'guardados' && (
+        <ModalGuardados
+          itens={guardadas.map((p) => ({ id: p.id, tipo: 'proposta', titulo: p.clients?.nome || p.titulo || 'Proposta', retomar_em: p.retomar_em, retomar_obs: p.retomar_obs, origem: p }))}
+          onClose={() => setModal(null)}
+          onMudarData={(i) => setModal({ tipo: 'retomar', proposta: i.origem })}
+          onRetomarAgora={async (i) => { await retomarAgora(i.origem, 'proposta'); setModal(null); await recarregar(); }} />
+      )}
       {modal?.tipo === 'perdeu' && (
         <ModalMotivo titulo="Não fechou" onClose={() => setModal(null)} onConfirmar={async (motivo) => {
           await mudarStatus(modal.proposta, 'recusada', { motivo_recusa: motivo || null });

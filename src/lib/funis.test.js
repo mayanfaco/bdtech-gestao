@@ -102,3 +102,28 @@ describe('nome com tratamento', () => {
     expect(preencherScript('Oi, {nome}!', { nome: 'Marcos – infraestrutura' })).toBe('Oi, Marcos!');
   });
 });
+
+import { dataRetomar, estaAdiado, voltouParaAtencao, OPCOES_RETOMAR } from './funis.js';
+
+describe('retomar depois', () => {
+  const op = (k) => OPCOES_RETOMAR.find((o) => o.key === k);
+  it('calcula as datas rápidas', () => {
+    expect(dataRetomar(op('1m'), agora)).toBe('2026-12-23');
+    expect(dataRetomar(op('3m'), agora)).toBe('2027-02-23');
+    expect(dataRetomar(op('ano'), agora)).toBe('2027-01-04'); // 02/01/2027 é sábado
+    expect(dataRetomar(op('1m'), new Date(2027, 0, 31))).toBe('2027-02-28');
+  });
+  it('separa guardados e os que voltaram', () => {
+    expect(estaAdiado({ retomar_em: '2026-12-01' }, agora)).toBe(true);
+    expect(estaAdiado({ retomar_em: '2026-11-23' }, agora)).toBe(false);
+    expect(voltouParaAtencao({ retomar_em: '2026-11-23' }, agora)).toBe(true);
+    expect(voltouParaAtencao({ retomado_em: '2026-11-23T10:00:00Z' }, agora)).toBe(true);
+    expect(voltouParaAtencao({}, agora)).toBe(false);
+  });
+});
+
+describe('ajuda: retomar depois', () => {
+  it('encontra pelo jeito de falar', () => {
+    expect(buscarAjuda('cliente quer deixar para o próximo ano')[0].id).toBe('retomar-depois');
+  });
+});

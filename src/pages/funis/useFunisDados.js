@@ -1,6 +1,6 @@
 import React from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
-import { cadenciaDasRegras } from '../../lib/funis.js';
+import { cadenciaDasRegras, voltouParaAtencao } from '../../lib/funis.js';
 import { faltaMigration } from '../../components/funis/ui.jsx';
 
 /**
@@ -42,8 +42,13 @@ export function useFunisDados() {
 }
 
 /** Atualiza um lead e registra a ação no histórico do lead. */
+// Qualquer ação no cartão tira o aviso "voltou para sua atenção".
+const comAtencaoResolvida = (item, patch) => (
+  voltouParaAtencao(item) && !('retomar_em' in patch) ? { ...patch, retomado_em: null, retomar_em: null } : patch
+);
+
 export async function atualizarLead(lead, patch, registro) {
-  const { error } = await supabase.from('leads').update(patch).eq('id', lead.id);
+  const { error } = await supabase.from('leads').update(comAtencaoResolvida(lead, patch)).eq('id', lead.id);
   if (error) return error;
   if (registro) {
     await supabase.from('activity_log').insert({
@@ -54,7 +59,7 @@ export async function atualizarLead(lead, patch, registro) {
 }
 
 export async function atualizarProposta(proposta, patch) {
-  const { error } = await supabase.from('proposals').update(patch).eq('id', proposta.id);
+  const { error } = await supabase.from('proposals').update(comAtencaoResolvida(proposta, patch)).eq('id', proposta.id);
   return error ?? null;
 }
 
@@ -65,4 +70,25 @@ export function contatoDaProposta(p) {
     local: c.nome || p.titulo || '',
     telefone: c.whatsapp || c.contato_telefone || '',
   };
+}
+
+/** Guarda o cartão para depois: sai dos funis e volta na data combinada. */
+export async function guardarParaDepois(item, tipo, data, obs) {
+  const patch = { retomar_em: data, retomar_obs: obs, retomado_em: null, followup_passo: null };
+  if (tipo === 'lead') {
+    return atualizarLead(item, patch, { tipo: 'note', titulo: `Retomar em ${new Date(`${data}T12:00`).toLocaleDateString('pt-BR')}`, texto: obs });
+  }
+  return atualizarProposta(item, patch);
+}
+
+/** Traz de volta antes da hora (ou na hora): fica destacado para atenção. */
+export async function retomarAgora(item, tipo) {
+  const patch = { retomar_em: null, retomado_em: new Date().toISOString() };
+  // Quem estava no follow-up/geladeira volta para a conversa (coluna "Respondeu").
+  if (tipo === 'lead' && ['follow_up', 'geladeira', 'sem_interesse'].includes(item.funil_etapa)) {
+    Object.assign(patch, { funil_etapa: 'respondeu', followup_passo: null, followup_inicio: null });
+  }
+  return tipo === 'lead'
+    ? atualizarLead(item, patch, { tipo: 'note', titulo: 'Retomado' })
+    : atualizarProposta(item, patch);
 }

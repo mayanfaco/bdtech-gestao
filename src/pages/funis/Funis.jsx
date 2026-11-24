@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { proximoToque } from '../../lib/funis.js';
+import { proximoToque, estaAdiado, voltouParaAtencao } from '../../lib/funis.js';
 import { useTutorial, FASES } from '../../lib/tutorial.jsx';
 import { AvisoMigration } from '../../components/funis/ui.jsx';
 import { useFunisDados } from './useFunisDados.js';
@@ -52,14 +52,14 @@ export default function Funis() {
   const fecharAviso = React.useCallback(() => setAviso(null), []);
 
   const pendentesHoje = !dados.carregando ? [
-    ...dados.leads.filter((l) => l.funil_etapa === 'follow_up'),
+    ...dados.leads.filter((l) => l.funil_etapa === 'follow_up' || voltouParaAtencao(l)),
     ...dados.propostas.filter((p) => ['enviada', 'visualizada', 'em_negociacao'].includes(p.status)),
-  ].filter((i) => { const t = proximoToque(i, dados.cadencia); return t && t.situacao !== 'futuro'; }).length : 0;
+  ].filter((i) => { if (estaAdiado(i)) return false; if (voltouParaAtencao(i)) return true; const t = proximoToque(i, dados.cadencia); return t && t.situacao !== 'futuro'; }).length : 0;
 
   const contagem = {
-    prospeccao: dados.leads?.filter((l) => ['para_abordar', 'mensagem_enviada', 'respondeu', 'reuniao'].includes(l.funil_etapa)).length ?? 0,
+    prospeccao: dados.leads?.filter((l) => !estaAdiado(l) && ['para_abordar', 'mensagem_enviada', 'respondeu', 'reuniao'].includes(l.funil_etapa)).length ?? 0,
     followup: pendentesHoje,
-    vendas: dados.propostas?.filter((p) => ['enviada', 'visualizada', 'em_negociacao'].includes(p.status)).length ?? 0,
+    vendas: dados.propostas?.filter((p) => !estaAdiado(p) && ['enviada', 'visualizada', 'em_negociacao'].includes(p.status)).length ?? 0,
   };
 
   const props = { dados, recarregar: dados.recarregar, avisar: setAviso };

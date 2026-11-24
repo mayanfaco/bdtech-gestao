@@ -86,6 +86,7 @@ export const SCRIPT_GRUPOS = [
     titulo: 'Visita, fechamento e indicação',
     quando: 'Para confirmar visita, agradecer e pedir indicação.',
     scripts: [
+      { id: 're-retomar', titulo: 'Retomar o que foi combinado', texto: 'Olá, {nome}! Tudo bem? Aqui é o {seu_nome}, da BDTECH. Combinamos de voltar a conversar agora sobre os elevadores do {local}. Esse ainda é um bom momento?' },
       { id: 're-confirmar', titulo: 'Confirmar visita', texto: 'Bom dia, {nome}! Confirmando nossa visita ao {local}. Estarei aí no horário combinado. Precisa que eu leve algum documento?' },
       { id: 're-obrigado', titulo: 'Agradecer o fechamento', texto: '{nome}, muito obrigado pela confiança! Vou cuidar dos elevadores do {local} como se fossem da minha casa. Qualquer coisa, pode me chamar direto aqui.' },
       { id: 're-indicacao', titulo: 'Pedir indicação', texto: '{nome}, fico feliz que esteja gostando do trabalho! Você conhece outro síndico ou gestor que também se preocupa com os elevadores? Uma indicação sua vale muito para mim.' },
@@ -93,6 +94,8 @@ export const SCRIPT_GRUPOS = [
     ],
   },
 ];
+
+export const SCRIPT_RETOMAR = () => SCRIPT_GRUPOS.find((g) => g.key === 'relacionamento').scripts.find((x) => x.id === 're-retomar');
 
 /** Script do toque N para lead (follow-up) ou para proposta. */
 export function scriptDoToque(passo, tipo = 'lead') {

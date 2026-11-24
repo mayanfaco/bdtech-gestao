@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
-import { PROSPECCAO_ETAPAS, PROSPECCAO_FORA_DO_QUADRO } from '../../lib/funis.js';
+import { PROSPECCAO_ETAPAS, PROSPECCAO_FORA_DO_QUADRO, estaAdiado, voltouParaAtencao } from '../../lib/funis.js';
 import { scriptDeAbordagem } from '../../content/scripts.js';
 import { Quadro, pararArraste } from '../../components/funis/Quadro.jsx';
 import { Explicacao, SeletorVisao, useVisao, Barras, Pizza } from '../../components/funis/ui.jsx';
-import { atualizarLead } from './useFunisDados.js';
+import { atualizarLead, guardarParaDepois, retomarAgora } from './useFunisDados.js';
+import { BotaoRetomar, SeloVoltou, ModalRetomar, ModalGuardados } from '../../components/funis/Retomar.jsx';
 import { ModalMensagem, ModalContato, ModalData, ModalMotivo, ModalFicha, SCRIPTS_ABORDAGEM } from './modais.jsx';
 
 const DIA = 86400000;
@@ -20,8 +21,10 @@ export function Prospeccao({ dados, recarregar, avisar }) {
   const fechar = () => { setModal(null); if (params.get('novo')) { params.delete('novo'); setParams(params, { replace: true }); } };
 
   const leads = dados.leads;
-  const noQuadro = leads.filter((l) => PROSPECCAO_ETAPAS.some((e) => e.key === l.funil_etapa));
-  const contagem = (k) => leads.filter((l) => l.funil_etapa === k).length;
+  // Quem pediu para conversar mais tarde fica guardado fora do quadro.
+  const guardados = leads.filter((l) => estaAdiado(l));
+  const noQuadro = leads.filter((l) => !estaAdiado(l) && PROSPECCAO_ETAPAS.some((e) => e.key === l.funil_etapa));
+  const contagem = (k) => leads.filter((l) => !estaAdiado(l) && l.funil_etapa === k).length;
   const contato = (l) => ({ nome: l.nome, local: l.empresa, telefone: l.whatsapp || l.telefone, seu_nome: dados.seuNome });
 
   async function mover(lead, etapa, extra = {}, registro) {
@@ -71,6 +74,7 @@ export function Prospeccao({ dados, recarregar, avisar }) {
     const dias = diasDesde(l.ultimo_contato_em ?? l.abordado_em ?? l.created_at);
     return (
       <>
+        {voltouParaAtencao(l) && <SeloVoltou item={l} />}
         <button type="button" className="fx-card__nome" {...pararArraste} onClick={() => setModal({ tipo: 'ficha', lead: l })}>
           {l.empresa || l.nome}
         </button>
@@ -101,6 +105,7 @@ export function Prospeccao({ dados, recarregar, avisar }) {
               <button type="button" className="fx-btn fx-btn--texto" onClick={() => setModal({ tipo: 'perdido', lead: l })}>Sem interesse</button>
             </>
           )}
+          <BotaoRetomar onClick={() => setModal({ tipo: 'retomar', lead: l })} />
         </div>
       </>
     );
@@ -131,6 +136,7 @@ export function Prospeccao({ dados, recarregar, avisar }) {
             ? <button key={k} type="button" className="fx-contador" onClick={() => navigate('/funis/followup')}>{label}: <b>{contagem(k)}</b> →</button>
             : <span key={k} className="fx-contador">{label}: <b>{contagem(k)}</b></span>
         ))}
+        <button type="button" className="fx-contador" onClick={() => setModal({ tipo: 'guardados' })}>⏰ Retomar depois: <b>{guardados.length}</b> →</button>
       </div>
 
       {visao === 'quadro' && (
@@ -139,6 +145,7 @@ export function Prospeccao({ dados, recarregar, avisar }) {
           itens={noQuadro}
           colunaDe={(l) => l.funil_etapa}
           renderCartao={renderCartao}
+          classeDoCartao={(l) => (voltouParaAtencao(l) ? 'fx-card--voltou' : '')}
           onMover={(l, etapa) => mover(l, etapa)}
         />
       )}
@@ -183,6 +190,22 @@ export function Prospeccao({ dados, recarregar, avisar }) {
             const ok = await mover(modal.lead, 'mensagem_enviada', {}, { tipo: 'message', titulo: 'Primeira mensagem enviada', texto });
             if (ok) { fechar(); avisar({ tipo: 'ok', texto: 'Pronto! Se não responder, amanhã ele aparece no Follow-up.' }); }
           }}
+        />
+      )}
+      {modal?.tipo === 'retomar' && (
+        <ModalRetomar nome={modal.lead.empresa || modal.lead.nome} atual={modal.lead} onClose={fechar} onConfirmar={async (data, obs) => {
+          const erro = await guardarParaDepois(modal.lead, 'lead', data, obs);
+          if (erro) { avisar({ tipo: 'erro', texto: erro.message }); return; }
+          fechar(); await recarregar();
+          avisar({ tipo: 'ok', texto: 'Guardado! Ele volta sozinho para você na data combinada.' });
+        }} />
+      )}
+      {modal?.tipo === 'guardados' && (
+        <ModalGuardados
+          itens={guardados.map((l) => ({ id: l.id, tipo: 'lead', titulo: l.empresa || l.nome, retomar_em: l.retomar_em, retomar_obs: l.retomar_obs, origem: l }))}
+          onClose={fechar}
+          onMudarData={(i) => setModal({ tipo: 'retomar', lead: i.origem })}
+          onRetomarAgora={async (i) => { await retomarAgora(i.origem, 'lead'); fechar(); await recarregar(); avisar({ tipo: 'ok', texto: 'Voltou para o quadro, destacado em amarelo.' }); }}
         />
       )}
       {modal?.tipo === 'visita' && (

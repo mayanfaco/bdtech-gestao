@@ -213,3 +213,48 @@ export function preencherScript(texto, vars = {}) {
 export function normalizar(s) {
   return String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
+
+// ---------------------------------------------------------------- Retomar depois
+// Cliente pediu para conversar mais tarde: o cartão sai dos funis e volta
+// sozinho na data combinada.
+export const OPCOES_RETOMAR = [
+  { key: '1m', label: 'Daqui a 1 mês', meses: 1 },
+  { key: '3m', label: 'Daqui a 3 meses', meses: 3 },
+  { key: '6m', label: 'Daqui a 6 meses', meses: 6 },
+  { key: 'ano', label: 'Começo do próximo ano', ano: true },
+];
+
+export const MOTIVOS_RETOMAR = [
+  'Só no próximo ano', 'Orçamento fechado este ano', 'Aguardando assembleia',
+  'Troca de síndico', 'Pediu para ligar depois', 'Contrato atual ainda vigente',
+];
+
+/** Data (AAAA-MM-DD) em que o cartão volta, para uma opção rápida. */
+export function dataRetomar(opcao, agora = new Date()) {
+  const h = hojeLocal(agora);
+  if (opcao.ano) {
+    // primeiro dia útil de janeiro (pula sábado/domingo); evita o feriado de 1º de janeiro
+    const d = new Date(h.getFullYear() + 1, 0, 2);
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+    return isoDia(d);
+  }
+  const alvo = new Date(h.getFullYear(), h.getMonth() + opcao.meses, 1);
+  const ultimoDia = new Date(alvo.getFullYear(), alvo.getMonth() + 1, 0).getDate();
+  alvo.setDate(Math.min(h.getDate(), ultimoDia));
+  return isoDia(alvo);
+}
+
+/** Está guardado para depois (data ainda não chegou)? */
+export function estaAdiado(item, agora = new Date()) {
+  return Boolean(item?.retomar_em) && dataLocal(item.retomar_em) > hojeLocal(agora);
+}
+
+/** Voltou para a atenção porque chegou a data combinada (e ninguém mexeu ainda). */
+export function voltouParaAtencao(item, agora = new Date()) {
+  if (item?.retomado_em) return true;
+  return Boolean(item?.retomar_em) && dataLocal(item.retomar_em) <= hojeLocal(agora);
+}
+
+export function formatarDia(iso) {
+  return dataLocal(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}

@@ -146,6 +146,8 @@ button.fx-contador:hover{border-color:var(--bd-primary-300);}
 .fx-erro{background:#FDECEC;color:#912018;border-radius:12px;padding:12px 14px;font-size:14.5px;}
 .fx-ok{background:#E7F6EC;color:#14532D;border-radius:12px;padding:12px 14px;font-size:14.5px;}
 
+.fx-voltou{background:#FFF4D6;border:1px solid #F5C84C;border-radius:10px;padding:8px 10px;font-size:13.5px;color:#7A4B00;line-height:1.4;}
+.fx-card--voltou{border:2px solid #F5B82E;box-shadow:0 0 0 3px rgba(245,184,46,.18);}
 .fx-script{background:var(--bd-surface-sunken);border-radius:12px;padding:14px;font-size:15px;line-height:1.55;white-space:pre-wrap;}
 
 /* Aviso de atualização do banco */
