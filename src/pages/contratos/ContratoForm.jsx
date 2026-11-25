@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useStaffOptions } from '../../lib/staffOptions.js';
 import { numeroPorExtenso } from '../../lib/numeroPorExtenso.js';
+import { formatCurrency } from '../../lib/proposalCalculations.js';
 import { Input } from '../../design-system/components/forms/Input.jsx';
 import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
@@ -25,10 +26,11 @@ const EMPTY = {
   contratada_razao_social: '', contratada_cnpj: '', contratada_endereco: '', contratada_representante: '', contratada_cpf: '',
   escopo_servico: '', data_inicio: DATA_INICIO_PADRAO, data_termino: DATA_TERMINO_PADRAO,
   valor_total: '', valor_total_extenso: '',
-  parcela1_valor: '', parcela1_data: '', parcela2_valor: '', parcela2_data: '',
-  parcelas_mensais_valor: '', parcelas_mensais_inicio: '',
+  parcela1_valor: '', parcela1_data: '',
+  parcelas_mensais_quantidade: '', parcelas_mensais_inicio: '',
   comarca_foro: 'Fortaleza/CE', cidade_assinatura: 'Fortaleza', data_assinatura: new Date().toISOString().slice(0, 10),
   responsavel_user_id: '',
+  testemunha1_nome: '', testemunha1_cpf: '', testemunha2_nome: '', testemunha2_cpf: '',
 };
 
 export default function ContratoForm() {
@@ -145,14 +147,18 @@ export default function ContratoForm() {
       valor_total_extenso: form.valor_total_extenso,
       parcela1_valor: form.parcela1_valor ? Number(form.parcela1_valor) : null,
       parcela1_data: form.parcela1_data || null,
-      parcela2_valor: form.parcela2_valor ? Number(form.parcela2_valor) : null,
-      parcela2_data: form.parcela2_data || null,
-      parcelas_mensais_valor: form.parcelas_mensais_valor ? Number(form.parcelas_mensais_valor) : null,
+      parcelas_mensais_quantidade: form.parcelas_mensais_quantidade ? Number(form.parcelas_mensais_quantidade) : null,
+      // Contrato antigo sem quantidade informada mantém o valor mensal já gravado.
+      parcelas_mensais_valor: valorParcela ?? form.parcelas_mensais_valor ?? null,
       parcelas_mensais_inicio: form.parcelas_mensais_inicio || null,
       comarca_foro: form.comarca_foro,
       cidade_assinatura: form.cidade_assinatura,
       data_assinatura: form.data_assinatura || null,
       responsavel_user_id: form.responsavel_user_id || null,
+      testemunha1_nome: form.testemunha1_nome || null,
+      testemunha1_cpf: form.testemunha1_cpf || null,
+      testemunha2_nome: form.testemunha2_nome || null,
+      testemunha2_cpf: form.testemunha2_cpf || null,
     };
 
     const result = isEdit
@@ -168,6 +174,10 @@ export default function ContratoForm() {
   }
 
   if (loading) return null;
+
+  const quantidadeParcelas = Number(form.parcelas_mensais_quantidade) || 0;
+  const restante = (Number(form.valor_total) || 0) - (Number(form.parcela1_valor) || 0);
+  const valorParcela = quantidadeParcelas > 0 ? Math.round((restante / quantidadeParcelas) * 100) / 100 : null;
 
   return (
     <div className="bd-u-flex-col bd-u-gap-3">
@@ -214,16 +224,14 @@ export default function ContratoForm() {
             onChange={(e) => { setExtensoTocado(true); setForm((f) => ({ ...f, valor_total_extenso: e.target.value })); }} />
         </div>
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="1ª parcela (R$)" type="number" step="0.01" value={form.parcela1_valor} onChange={set('parcela1_valor')} />
-          <Input label="Data da 1ª parcela" type="date" value={form.parcela1_data} onChange={set('parcela1_data')} />
+          <Input label="1ª parcela — sinal (R$)" type="number" step="0.01" value={form.parcela1_valor} onChange={set('parcela1_valor')} />
+          <Input label="Vencimento da entrada" type="date" required={Number(form.parcela1_valor) > 0} value={form.parcela1_data} onChange={set('parcela1_data')} />
         </div>
         <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="2ª parcela (R$)" type="number" step="0.01" value={form.parcela2_valor} onChange={set('parcela2_valor')} />
-          <Input label="Data da 2ª parcela" type="date" value={form.parcela2_data} onChange={set('parcela2_data')} />
-        </div>
-        <div className="bd-u-grid-2 bd-u-gap-4">
-          <Input label="Parcelas mensais restantes (R$)" type="number" step="0.01" value={form.parcelas_mensais_valor} onChange={set('parcelas_mensais_valor')} />
-          <Input label="Início das mensais" type="date" value={form.parcelas_mensais_inicio} onChange={set('parcelas_mensais_inicio')} />
+          <Input label="Parcelas restantes" type="number" min="1" step="1" value={form.parcelas_mensais_quantidade} onChange={set('parcelas_mensais_quantidade')}
+            hint={valorParcela != null ? `Valor de cada parcela: ${formatCurrency(valorParcela)}` : 'Ex.: 11 = restante dividido em 11 parcelas mensais'} />
+          <Input label="1º vencimento das parcelas" type="date" required={quantidadeParcelas > 0} value={form.parcelas_mensais_inicio} onChange={set('parcelas_mensais_inicio')}
+            hint="As outras vencem no mesmo dia dos meses seguintes. Dá para alterar cada uma depois." />
         </div>
 
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Foro e assinatura</h3>
@@ -236,6 +244,16 @@ export default function ContratoForm() {
           <Select label="Responsável" value={form.responsavel_user_id} onChange={set('responsavel_user_id')} placeholder="Selecione..." options={staffOptions} />
         </div>
 
+        <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Testemunhas</h3>
+        <div className="bd-u-grid-2 bd-u-gap-4">
+          <Input label="Testemunha 1 — nome" value={form.testemunha1_nome} onChange={set('testemunha1_nome')} />
+          <Input label="Testemunha 1 — CPF" value={form.testemunha1_cpf} onChange={set('testemunha1_cpf')} />
+        </div>
+        <div className="bd-u-grid-2 bd-u-gap-4">
+          <Input label="Testemunha 2 — nome" value={form.testemunha2_nome} onChange={set('testemunha2_nome')} />
+          <Input label="Testemunha 2 — CPF" value={form.testemunha2_cpf} onChange={set('testemunha2_cpf')} />
+        </div>
+
         {error && <Alert tone="danger">{error}</Alert>}
       </div>
       <div className="bd-doc-editor__form-footer">
@@ -245,7 +263,7 @@ export default function ContratoForm() {
       </form>
 
       <div className="bd-doc-editor__preview">
-        <ContratoDocumentPreview contract={form} />
+        <ContratoDocumentPreview contract={{ ...form, parcelas_mensais_valor: valorParcela ?? form.parcelas_mensais_valor }} />
       </div>
       </div>
     </div>

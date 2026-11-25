@@ -38,12 +38,15 @@ if (typeof document !== 'undefined' && !document.getElementById('bd-sidebar-css'
 }
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: I.dashboard, end: true },
+  { to: '/', label: 'Início', icon: I.home, end: true },
   { to: '/clientes', label: 'Clientes', icon: I.users },
   { to: '/propostas', label: 'Propostas', icon: I.file },
   { to: '/contratos', label: 'Contratos', icon: I.contract },
+  { to: '/recebimentos', label: 'Recebimentos', icon: I.money },
+  { to: '/recibos', label: 'Recibos', icon: I.receipt },
   { to: '/calendario', label: 'Calendário', icon: I.calendar },
   { to: '/tarefas', label: 'Tarefas', icon: I.checklist },
+  { to: '/relatorios', label: 'Relatórios', icon: I.dashboard },
   { to: '/configuracoes', label: 'Configurações', icon: I.settings },
 ];
 
@@ -51,7 +54,7 @@ export const SIDEBAR_WIDTH_PX = SIDEBAR_WIDTH;
 
 export function Sidebar({ open = false, onClose }) {
   const location = useLocation();
-  const isDash = location.pathname === '/';
+  const isDash = location.pathname === '/relatorios';
   return (
     <>
       {open && <div className="bd-sidebar__backdrop" onClick={onClose} />}

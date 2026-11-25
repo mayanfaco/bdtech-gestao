@@ -37,6 +37,15 @@
   .bd-print-page footer { margin-top: 8px !important; padding-top: 5px !important; }
   .bd-print-page .bd-doc-sign-line { height: 110px !important; }
 
+  /* A página impressa (A4 com margens) fica mais estreita que 900px, o que
+     dispara a regra responsiva de telas estreitas (index.css) e empilha em
+     1 coluna qualquer grid de 2/3/4 colunas do documento — inclusive as
+     assinaturas lado a lado. Na impressão o layout deve seguir o desenho
+     original, não a versão "celular". */
+  .bd-print-page.bd-u-grid-2, .bd-print-page .bd-u-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .bd-print-page.bd-u-grid-3, .bd-print-page .bd-u-grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+  .bd-print-page.bd-u-grid-4, .bd-print-page .bd-u-grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+
   /* Evita que uma caixa/faixa colorida seja cortada no meio, dividida entre
      duas páginas — deixa o PDF mais parecido com a prévia contínua. */
   .bd-print-avoid-break { break-inside: avoid; }
@@ -75,4 +84,21 @@
   margin: 0 auto;
   padding: var(--bd-space-8);
   background: #fff;
+}
+
+/* Recibo: uma página só, com fonte e respiro de documento, sem a compactação
+   de .bd-print-page. Fica depois da regra de tela para vencer na impressão. */
+.bd-recibo {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(20px, 7%, 56px);
+  background: #fff;
+}
+
+@media print {
+  .bd-recibo {
+    max-width: none;
+    margin: 0;
+    padding: 8mm 6mm 0;
+  }
 }

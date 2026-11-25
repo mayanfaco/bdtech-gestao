@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { PROPOSAL_STATUS_LABEL, PROPOSAL_STATUS_TONE } from '../../lib/statusLabels.js';
 import { proposalNumberLabel, formatCurrency } from '../../lib/proposalCalculations.js';
+import { mesLabel, noMes } from '../../lib/meses.js';
+import { SeletorMes, useMesNaUrl } from '../../components/SeletorMes.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
@@ -72,6 +74,7 @@ export default function PropostasList() {
   const urlDesde = searchParams.get('desde');
   const urlResponsavel = searchParams.get('responsavel');
   const vindoDaDash = urlStatuses.length > 0 || urlDesde || urlResponsavel;
+  const [mes, setMes] = useMesNaUrl('');
 
   const load = React.useCallback(() => {
     supabase.from('proposals').select('*, clients(nome)').is('deleted_at', null).order('created_at', { ascending: false })
@@ -95,6 +98,7 @@ export default function PropostasList() {
   if (urlStatuses.length) base = base.filter((p) => urlStatuses.includes(p.status));
   if (urlDesde) base = base.filter((p) => new Date(p.status_changed_at || p.created_at) >= new Date(urlDesde));
   if (urlResponsavel) base = base.filter((p) => p.responsavel_user_id === urlResponsavel);
+  if (mes) base = base.filter((p) => noMes(p.data_proposta || p.created_at, mes));
 
   const valorDe = (p) => Number(p.valor_total) || Number(p.modelo1_valor_com_desconto) || 0;
   const groupsWithData = GROUPS.map((g) => {
@@ -116,16 +120,21 @@ export default function PropostasList() {
           <Link to="/propostas" style={{ color: 'var(--bd-primary-600)' }}>Limpar filtro</Link>
         </div>
       )}
-      <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
-        <div style={{ maxWidth: 240 }}>
+      <div className="bd-u-flex bd-u-items-center bd-u-justify-between bd-u-gap-4" style={{ flexWrap: 'wrap' }}>
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-4" style={{ flexWrap: 'wrap' }}>
+          <SeletorMes mes={mes} onChange={setMes} />
+          <div style={{ width: 240 }}>
           <Select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setActiveGroup(null); }}
             placeholder="Todos os status" options={Object.entries(PROPOSAL_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
+          </div>
         </div>
         <div className="bd-u-flex bd-u-items-center bd-u-gap-3">
           <Button variant="outline" as={Link} to="/propostas/avulsas">Propostas avulsas</Button>
           <Button as={Link} to="/propostas/nova">Nova proposta</Button>
         </div>
       </div>
+
+      {mes && <p style={{ margin: 0, fontSize: 15, color: 'var(--bd-text-muted)' }}>Propostas de {mesLabel(mes, { minusculo: true })} · {base.length}</p>}
 
       {!modoDropdown && (
         <div className="bd-u-flex bd-u-gap-4" style={{ flexWrap: 'wrap' }}>

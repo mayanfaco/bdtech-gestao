@@ -9,6 +9,7 @@ import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
+import { ContratoParcelas } from '../../components/recebimentos/ContratoParcelas.jsx';
 
 export default function ContratoDetail() {
   const { id } = useParams();
@@ -138,6 +139,8 @@ export default function ContratoDetail() {
         </div>
         {contract.escopo_servico && <p style={{ marginTop: 'var(--bd-space-4)' }}>{contract.escopo_servico}</p>}
       </Card>
+
+      <ContratoParcelas contract={contract} onChanged={() => setRefreshKey((k) => k + 1)} />
 
       <div>
         <h2 style={{ fontSize: 18, marginBottom: 'var(--bd-space-3)' }}>Linha do tempo</h2>

@@ -9,12 +9,15 @@ import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { mensagemDeErro } from '../../lib/supabaseErros.js';
 import { IconButton } from '../../design-system/components/buttons/IconButton.jsx';
 import { I } from '../../components/layout/icons.jsx';
+import { mesLabel, noMes } from '../../lib/meses.js';
+import { SeletorMes, useMesNaUrl } from '../../components/SeletorMes.jsx';
 
 const label = (p) => `PROP-AV-${new Date(p.created_at).getFullYear()}-${String(p.numero).padStart(4, '0')}`;
 
 export default function PropostasAvulsasList() {
   const [propostas, setPropostas] = React.useState(null);
   const [error, setError] = React.useState('');
+  const [mes, setMes] = useMesNaUrl('');
 
   const load = React.useCallback(() => {
     supabase.from('standalone_proposals').select('*').is('deleted_at', null)
@@ -56,9 +59,13 @@ export default function PropostasAvulsasList() {
         <Button as={Link} to="/propostas/avulsas/nova">Nova proposta avulsa</Button>
       </div>
 
+      <SeletorMes mes={mes} onChange={setMes} />
+
       {error && <Alert tone="danger">{error}</Alert>}
 
-      {error ? null : propostas.length === 0 ? (
+      {error ? null : propostas.length > 0 && !propostas.some((p) => noMes(p.created_at, mes)) ? (
+        <EmptyState title={`Nenhuma proposta avulsa em ${mesLabel(mes, { minusculo: true })}`} />
+      ) : propostas.length === 0 ? (
         <EmptyState
           title="Nenhuma proposta avulsa ainda"
           text="Use este espaço para propostas de serviços específicos — laudos, avaliações, pareceres — colando o texto pronto."
@@ -66,7 +73,7 @@ export default function PropostasAvulsasList() {
         />
       ) : (
         <div className="bd-u-flex-col bd-u-gap-3">
-          {propostas.map((p) => (
+          {propostas.filter((p) => noMes(p.created_at, mes)).map((p) => (
             <Link key={p.id} to={`/propostas/avulsas/${p.id}/editar`} style={{ textDecoration: 'none', display: 'block' }}>
               <Card interactive>
                 <div className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ padding: 'var(--bd-space-5) var(--bd-space-6)' }}>

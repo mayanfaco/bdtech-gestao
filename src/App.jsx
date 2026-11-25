@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Inicio from './pages/Inicio.jsx';
 import PropostasList from './pages/propostas/PropostasList.jsx';
 import PropostaForm from './pages/propostas/PropostaForm.jsx';
 import PropostaDetail from './pages/propostas/PropostaDetail.jsx';
@@ -33,6 +34,10 @@ const PropostasAvulsasList = lazy(() => import('./pages/propostas/PropostasAvuls
 const PropostaAvulsaForm = lazy(() => import('./pages/propostas/PropostaAvulsaForm.jsx'));
 const PropostaAvulsaPrint = lazy(() => import('./pages/propostas/PropostaAvulsaPrint.jsx'));
 const ContratoAssinatura = lazy(() => import('./pages/contratos/ContratoAssinatura.jsx'));
+const Recebimentos = lazy(() => import('./pages/recebimentos/Recebimentos.jsx'));
+const RecibosList = lazy(() => import('./pages/recibos/RecibosList.jsx'));
+const ReciboForm = lazy(() => import('./pages/recibos/ReciboForm.jsx'));
+const ReciboPrint = lazy(() => import('./pages/recibos/ReciboPrint.jsx'));
 const Configuracoes = lazy(() => import('./pages/configuracoes/Configuracoes.jsx'));
 const GoogleCalendarConfig = lazy(() => import('./pages/configuracoes/GoogleCalendarConfig.jsx'));
 const ConfiguracoesEmpresa = lazy(() => import('./pages/configuracoes/ConfiguracoesEmpresa.jsx'));
@@ -56,6 +61,7 @@ function App() {
           <Route path="/propostas/avulsas/:id/pdf" element={<ProtectedRoute><PropostaAvulsaPrint /></ProtectedRoute>} />
           <Route path="/propostas/:id/pdf" element={<ProtectedRoute><PropostaPrint /></ProtectedRoute>} />
           <Route path="/contratos/:id/pdf" element={<ProtectedRoute><ContratoPrint /></ProtectedRoute>} />
+          <Route path="/recibos/:id/pdf" element={<ProtectedRoute><ReciboPrint /></ProtectedRoute>} />
 
           <Route
             element={
@@ -66,7 +72,8 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
+            <Route index element={<Inicio />} />
+            <Route path="relatorios" element={<Dashboard />} />
 
             <Route path="clientes" element={<ClientesList />} />
             <Route path="clientes/novo" element={<ClienteForm />} />
@@ -90,6 +97,11 @@ function App() {
             <Route path="contratos/:id" element={<ContratoDetail />} />
             <Route path="contratos/:id/editar" element={<ContratoForm />} />
             <Route path="contratos/:id/assinatura" element={<ContratoAssinatura />} />
+
+            <Route path="recebimentos" element={<Recebimentos />} />
+            <Route path="recibos" element={<RecibosList />} />
+            <Route path="recibos/novo" element={<ReciboForm />} />
+            <Route path="recibos/:id/editar" element={<ReciboForm />} />
 
             <Route path="calendario" element={<Calendario />} />
             <Route path="calendario/novo" element={<EventoForm />} />

@@ -9,6 +9,10 @@ import { EmptyState } from '../../components/EmptyState.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
 import { PROPOSAL_STATUS_LABEL, PROPOSAL_STATUS_TONE, CONTRACT_STATUS_LABEL, CONTRACT_STATUS_TONE } from '../../lib/statusLabels.js';
+import { formatCurrency } from '../../lib/proposalCalculations.js';
+import { reciboNumeroLabel } from '../../lib/reciboCalculations.js';
+import { dataCurta, hojeLocal } from '../../lib/dateUtils.js';
+import { ParcelaItem, buscarParcelas } from '../../components/recebimentos/ParcelaItem.jsx';
 
 const RELACIONAMENTO_LABEL = { prospect: 'Prospect', ativo: 'Ativo', inativo: 'Inativo' };
 const RELACIONAMENTO_TONE = { prospect: 'warning', ativo: 'success', inativo: 'neutral' };
@@ -33,6 +37,8 @@ export default function ClienteDetail() {
   const [deleting, setDeleting] = React.useState(false);
   const [proposals, setProposals] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
+  const [receipts, setReceipts] = React.useState([]);
+  const [parcelas, setParcelas] = React.useState([]);
   const [events, setEvents] = React.useState([]);
   const [tasks, setTasks] = React.useState([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
@@ -41,6 +47,8 @@ export default function ClienteDetail() {
     supabase.from('clients').select('*').eq('id', id).single().then(({ data }) => setClient(data));
     supabase.from('proposals').select('*').eq('client_id', id).is('deleted_at', null).order('created_at', { ascending: false }).then(({ data }) => setProposals(data ?? []));
     supabase.from('contracts').select('*').eq('client_id', id).is('deleted_at', null).order('created_at', { ascending: false }).then(({ data }) => setContracts(data ?? []));
+    buscarParcelas((sel) => supabase.from('receivables').select(sel).eq('client_id', id).is('cancelado_em', null).order('vencimento')).then(({ data }) => setParcelas(data ?? []));
+    supabase.from('receipts').select('*').eq('client_id', id).is('deleted_at', null).order('data_recibo', { ascending: false }).order('numero', { ascending: false }).then(({ data }) => setReceipts(data ?? []));
     supabase.from('calendar_events').select('*').eq('client_id', id).order('data_inicio', { ascending: false }).then(({ data }) => setEvents(data ?? []));
     supabase.from('tasks').select('*').eq('client_id', id).is('deleted_at', null).order('prazo', { ascending: true }).then(({ data }) => setTasks(data ?? []));
   }, [id]);
@@ -77,6 +85,27 @@ export default function ClienteDetail() {
           {contracts.map((c) => (
             <ListRow key={c.id} to={`/contratos/${c.id}`} title={`Contrato #${c.numero} — ${c.data_inicio} a ${c.data_termino}`}
               badge={<Badge tone={CONTRACT_STATUS_TONE[c.status]}>{CONTRACT_STATUS_LABEL[c.status]}</Badge>} />
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: 'Recebimentos',
+      content: parcelas.length === 0 ? <EmptyState title="Nenhuma parcela para este cliente" text="As parcelas aparecem aqui depois de geradas na ficha do contrato." /> : (
+        <Card>
+          <div style={{ marginTop: 'calc(-1 * var(--bd-space-4))', marginBottom: 'calc(-1 * var(--bd-space-4))' }}>
+            {parcelas.map((p) => <ParcelaItem key={p.id} parcela={p} hoje={hojeLocal()} mostrarCliente={false} compacto onChanged={() => { load(); setRefreshKey((k) => k + 1); }} />)}
+          </div>
+        </Card>
+      ),
+    },
+    {
+      label: 'Recibos',
+      content: receipts.length === 0 ? <EmptyState title="Nenhum recibo para este cliente" /> : (
+        <div className="bd-u-flex-col bd-u-gap-2">
+          {receipts.map((r) => (
+            <ListRow key={r.id} to={`/recibos/${r.id}/editar`} title={`${reciboNumeroLabel(r)} — ${dataCurta(r.data_recibo)}`}
+              badge={<Badge tone="success">{formatCurrency(r.valor_recebido)}</Badge>} />
           ))}
         </div>
       ),
@@ -150,6 +179,7 @@ export default function ClienteDetail() {
       <div className="bd-u-flex bd-u-gap-3" style={{ flexWrap: 'wrap' }}>
         <Button variant="outline" size="sm" as={Link} to={`/propostas/nova?clienteId=${id}`}>Gerar proposta</Button>
         <Button variant="outline" size="sm" as={Link} to={`/contratos/novo?clienteId=${id}`}>Criar contrato</Button>
+        <Button variant="outline" size="sm" as={Link} to={`/recibos/novo?clienteId=${id}`}>Gerar recibo</Button>
         <Button variant="outline" size="sm" as={Link} to={`/calendario/novo?clienteId=${id}`}>Agendar reunião</Button>
         <Button variant="outline" size="sm" as={Link} to={`/tarefas/nova?clientId=${id}`}>Criar tarefa</Button>
       </div>

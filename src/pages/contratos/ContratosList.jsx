@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient.js';
 import { CONTRACT_STATUS_LABEL, CONTRACT_STATUS_TONE } from '../../lib/statusLabels.js';
 import { formatCurrency } from '../../lib/proposalCalculations.js';
+import { mesLabel, noMes, vigenteNoMes } from '../../lib/meses.js';
+import { SeletorMes, useMesNaUrl } from '../../components/SeletorMes.jsx';
 import { EmptyState } from '../../components/EmptyState.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Select } from '../../design-system/components/forms/Select.jsx';
@@ -24,6 +26,7 @@ export default function ContratosList() {
   const urlVencendo = searchParams.get('vencendo');
   const urlResponsavel = searchParams.get('responsavel');
   const vindoDaDash = urlStatuses.length > 0 || urlVencendo || urlResponsavel;
+  const [mes, setMes] = useMesNaUrl('');
 
   const load = React.useCallback(() => {
     supabase.from('contracts').select('*, clients(nome)').is('deleted_at', null).order('created_at', { ascending: false })
@@ -55,6 +58,8 @@ export default function ContratosList() {
     });
   }
   if (urlResponsavel) filtered = filtered.filter((c) => c.responsavel_user_id === urlResponsavel);
+  // No mês: contratos vigentes em algum dia dele, ou criados nele (rascunho com início futuro).
+  if (mes) filtered = filtered.filter((c) => vigenteNoMes(c.data_inicio, c.data_termino, mes) || noMes(c.created_at, mes));
 
   return (
     <div className="bd-u-flex-col bd-u-gap-6">
@@ -64,15 +69,21 @@ export default function ContratosList() {
           <Link to="/contratos" style={{ color: 'var(--bd-primary-600)' }}>Limpar filtro</Link>
         </div>
       )}
-      <div className="bd-u-flex bd-u-items-center bd-u-justify-between">
-        <div style={{ maxWidth: 240 }}>
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            placeholder="Todos os status" options={Object.entries(CONTRACT_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
+      <div className="bd-u-flex bd-u-items-center bd-u-justify-between bd-u-gap-4" style={{ flexWrap: 'wrap' }}>
+        <div className="bd-u-flex bd-u-items-center bd-u-gap-4" style={{ flexWrap: 'wrap' }}>
+          <SeletorMes mes={mes} onChange={setMes} />
+          <div style={{ width: 240 }}>
+            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+              placeholder="Todos os status" options={Object.entries(CONTRACT_STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
+          </div>
         </div>
         <Button as={Link} to="/contratos/novo">Novo contrato</Button>
       </div>
+      {mes && <p style={{ margin: 0, fontSize: 15, color: 'var(--bd-text-muted)' }}>Contratos vigentes em {mesLabel(mes, { minusculo: true })} · {filtered.length}</p>}
 
-      {filtered.length === 0 ? (
+      {filtered.length === 0 && contracts.length > 0 ? (
+        <EmptyState title="Nenhum contrato neste filtro" text="Troque o mês ou clique em “Todos os meses”." />
+      ) : filtered.length === 0 ? (
         <EmptyState title="Nenhum contrato registrado ainda"
           text="Contratos podem ser criados a partir de uma proposta aprovada ou diretamente aqui."
           action={<Button as={Link} to="/contratos/novo">Novo contrato</Button>} />

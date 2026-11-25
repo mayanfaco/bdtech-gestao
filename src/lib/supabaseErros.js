@@ -8,7 +8,8 @@ export function mensagemDeErro(error, contexto = {}) {
   if (!error) return '';
   const texto = error.message ?? String(error);
 
-  const tabelaFaltando = error.code === 'PGRST205' || /could not find the table/i.test(texto);
+  const tabelaFaltando = ['PGRST205', 'PGRST200', 'PGRST204', '42703'].includes(error.code)
+    || /could not find the (table|.*relationship|.*column)|column .* does not exist/i.test(texto);
   if (tabelaFaltando) {
     const extra = contexto.migration
       ? ` Rode a migration ${contexto.migration} no SQL Editor do Supabase.`

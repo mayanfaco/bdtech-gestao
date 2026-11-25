@@ -37,3 +37,29 @@ export function isSameMonth(a, b) {
 export function toDateKey(date) {
   return date.toISOString().slice(0, 10);
 }
+
+/** Hoje no fuso de quem usa: toISOString() já vira o dia seguinte às 21h em Fortaleza. */
+export function hojeLocal() {
+  return new Date().toLocaleDateString('en-CA');
+}
+
+/** "2026-11-05" → "5 de novembro de 2026". */
+export function dataLonga(iso) {
+  if (!iso) return '—';
+  const [ano, mes, dia] = iso.split('-').map(Number);
+  if (!ano || !mes || !dia) return '—';
+  return `${dia} de ${MESES[mes - 1].toLowerCase()} de ${ano}`;
+}
+
+/** Soma dias a uma data "AAAA-MM-DD" (sem fuso). */
+export function addDias(iso, dias) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+
+/** "2026-11-05" → "05/11/2026". */
+export function dataCurta(iso) {
+  if (!iso) return '—';
+  return iso.split('-').reverse().join('/');
+}
