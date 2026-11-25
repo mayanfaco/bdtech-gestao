@@ -14,6 +14,11 @@ const TITLES = [
   { prefix: '/tarefas', title: 'Tarefas' },
   { prefix: '/relatorios', title: 'Relatórios' },
   { prefix: '/configuracoes', title: 'Configurações' },
+  { prefix: '/funis', title: 'Funis' },
+  { prefix: '/onde-prospectar', title: 'Onde prospectar' },
+  { prefix: '/guia', title: 'Guia de vendas' },
+  { prefix: '/tutorial', title: 'Tutorial' },
+  { prefix: '/meu-lar', title: 'Meu Lar' },
 ];
 
 export function getPageTitle(pathname) {
