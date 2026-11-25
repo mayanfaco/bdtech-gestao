@@ -10,6 +10,7 @@ import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
 import { ContratoParcelas } from '../../components/recebimentos/ContratoParcelas.jsx';
+import { RecibosVinculados } from '../../components/recibos/RecibosVinculados.jsx';
 
 export default function ContratoDetail() {
   const { id } = useParams();
@@ -141,6 +142,9 @@ export default function ContratoDetail() {
       </Card>
 
       <ContratoParcelas contract={contract} onChanged={() => setRefreshKey((k) => k + 1)} />
+
+      <RecibosVinculados campo="contract_id" valor={id} refreshKey={refreshKey}
+        novoRecibo={`/recibos/novo?clienteId=${contract.client_id}&contratoId=${id}`} />
 
       <div>
         <h2 style={{ fontSize: 18, marginBottom: 'var(--bd-space-3)' }}>Linha do tempo</h2>

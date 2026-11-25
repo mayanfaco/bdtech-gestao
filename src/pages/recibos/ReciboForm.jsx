@@ -55,11 +55,19 @@ export default function ReciboForm() {
   const [error, setError] = React.useState('');
   // Depois de salvar, a tela mostra a confirmação (a URL ganha ?salvo=1).
   const acabouDeSalvar = searchParams.get('salvo') === '1';
+  const contratoDaUrl = searchParams.get('contratoId') ?? '';
+  const [contratosDoCliente, setContratosDoCliente] = React.useState([]);
+  // Salvamento automático: "sujo" = a pessoa mexeu e ainda não foi gravado.
+  const [sujo, setSujo] = React.useState(false);
+  const [salvoEm, setSalvoEm] = React.useState(acabouDeSalvar ? new Date() : null);
+  const salvandoRef = React.useRef(false);
 
   function selecionarCliente(clienteId, lista) {
     const cliente = lista.find((c) => c.id === clienteId);
+    setSujo(true);
     setForm((f) => ({
       ...f,
+      contract_id: f.client_id === clienteId ? f.contract_id : '',
       client_id: clienteId,
       pagador_nome: cliente?.nome ?? '',
       pagador_documento: cliente?.cpf_cnpj || cliente?.cnpj || '',
@@ -91,6 +99,9 @@ export default function ReciboForm() {
       const { data: existente } = await supabase.from('receipts').select('id')
         .eq('payment_id', pagamentoId).is('deleted_at', null).maybeSingle();
       if (existente) { navigate(`/recibos/${existente.id}/editar`, { replace: true }); return; }
+      // O banco gera e salva o recibo do pagamento (migration 0017).
+      const gerado = await supabase.rpc('gerar_recibo_do_pagamento', { p_payment: pagamentoId });
+      if (!gerado.error && gerado.data) { navigate(`/recibos/${gerado.data}/editar?salvo=1`, { replace: true }); return; }
       const r = await carregarDoPagamento(pagamentoId);
       if (r.error) setError(mensagemDeErro(r.error, MIGRATION));
       else { setForm(r.dados); setContrato(r.contrato); }
@@ -98,7 +109,33 @@ export default function ReciboForm() {
     })();
   }, [isEdit, pagamentoId, navigate]);
 
-  function set(field) { return (e) => setForm((f) => ({ ...f, [field]: e.target.value })); }
+  function set(field) { return (e) => { setSujo(true); setForm((f) => ({ ...f, [field]: e.target.value })); }; }
+
+  // Contratos do cliente escolhido: ligar o recibo ao contrato liga também à proposta.
+  React.useEffect(() => {
+    if (!form.client_id) { setContratosDoCliente([]); return; }
+    supabase.from('contracts').select('id, numero, valor_total, data_inicio, status, proposal_id')
+      .eq('client_id', form.client_id).is('deleted_at', null).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        const lista = data ?? [];
+        setContratosDoCliente(lista);
+        // Veio de um contrato (botão "Novo recibo" no contrato): já deixa ligado.
+        if (!isEdit && contratoDaUrl && lista.some((c) => c.id === contratoDaUrl)) {
+          setForm((f) => (f.contract_id ? f : { ...f, contract_id: contratoDaUrl }));
+        }
+      });
+  }, [form.client_id, isEdit, contratoDaUrl]);
+
+  function escolherContrato(contratoId) {
+    const c = contratosDoCliente.find((x) => x.id === contratoId);
+    setSujo(true);
+    setForm((f) => ({
+      ...f,
+      contract_id: contratoId,
+      valor_total: c && !f.valor_total ? String(c.valor_total ?? '') : f.valor_total,
+      data_inicio_servicos: c?.data_inicio ?? f.data_inicio_servicos,
+    }));
+  }
 
   const doPagamento = Boolean(form.payment_id);
   const calculo = reciboCalculo({
@@ -120,10 +157,15 @@ export default function ReciboForm() {
     return lista;
   }
 
-  async function handleSubmit(e, { imprimir = false } = {}) {
+  async function handleSubmit(e, { imprimir = false, automatico = false } = {}) {
     e?.preventDefault();
+    if (salvandoRef.current) return;
     const lista = faltando();
-    if (lista.length) { setError(`O recibo ainda NÃO foi salvo. Falta: ${lista.join(' ')}`); return; }
+    if (lista.length) {
+      if (!automatico) setError(`O recibo ainda NÃO foi salvo. Falta: ${lista.join(' ')}`);
+      return;
+    }
+    salvandoRef.current = true;
     setSaving(true);
     setError('');
     const payload = {
@@ -136,6 +178,7 @@ export default function ReciboForm() {
       valor_recebido: Number(form.valor_recebido),
       parcelas_restantes: form.parcelas_restantes ? Number(form.parcelas_restantes) : null,
     };
+    if (form.contract_id) payload.contract_id = form.contract_id;
     // Os campos novos só vão no recibo de pagamento, para o recibo avulso
     // continuar salvando mesmo que a migration 0014 ainda não tenha rodado.
     if (doPagamento) Object.assign(payload, { payment_id: form.payment_id, referente: form.referente, saldo_restante: form.saldo_restante });
@@ -145,12 +188,25 @@ export default function ReciboForm() {
       : await supabase.from('receipts').insert(payload).select().single();
 
     setSaving(false);
+    salvandoRef.current = false;
     if (result.error) {
       setError(result.error.code === '23505' ? 'Este pagamento já tem um recibo. Procure em Recibos.' : mensagemDeErro(result.error, MIGRATION));
       return;
     }
-    navigate(imprimir ? `/recibos/${result.data.id}/pdf` : `/recibos/${result.data.id}/editar?salvo=1`, { replace: true });
+    setError('');
+    setSujo(false);
+    setSalvoEm(new Date());
+    if (imprimir) { navigate(`/recibos/${result.data.id}/pdf`); return; }
+    if (!isEdit) navigate(`/recibos/${result.data.id}/editar?salvo=1`, { replace: true });
   }
+
+  // Salva sozinho um instante depois da última alteração, assim que o recibo
+  // estiver completo. Não existe mais recibo "esquecido sem salvar".
+  React.useEffect(() => {
+    if (!sujo || loading) return undefined;
+    const t = setTimeout(() => handleSubmit(null, { automatico: true }), 1000);
+    return () => clearTimeout(t);
+  }, [form, sujo, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return null;
 
@@ -194,6 +250,13 @@ export default function ReciboForm() {
                   placeholder="Selecione..." options={clients.map((c) => ({ value: c.id, label: c.nome }))}
                   hint={semDocumento ? 'Este cliente está sem CNPJ no cadastro. Complete o cadastro antes de emitir.' : undefined} />
 
+                {form.client_id && (
+                  <Select label="Contrato" value={form.contract_id ?? ''} onChange={(e) => escolherContrato(e.target.value)}
+                    placeholder={contratosDoCliente.length ? 'Sem contrato' : 'Este cliente não tem contrato'}
+                    options={contratosDoCliente.map((c) => ({ value: c.id, label: `${contratoNumeroLabel(c)} · ${formatCurrency(Number(c.valor_total) || 0)}` }))}
+                    hint="Ligando ao contrato, o recibo aparece também no contrato e na proposta." />
+                )}
+
                 <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 16, marginTop: 'var(--bd-space-4)' }}>Datas</h3>
                 <div className="bd-u-grid-2 bd-u-gap-4">
                   <Input label="Data do recibo" type="date" required value={form.data_recibo} onChange={set('data_recibo')} />
@@ -212,6 +275,9 @@ export default function ReciboForm() {
 
             {error && <Alert tone="danger">{error}</Alert>}
           </div>
+          <div className="no-print" style={{ fontSize: 14, fontWeight: 600, color: saving ? 'var(--bd-text-muted)' : sujo ? '#92400E' : salvoEm ? '#15803D' : 'var(--bd-text-muted)' }}>
+            {saving ? 'Salvando...' : sujo ? (faltando().length ? 'Preencha o que falta: o recibo salva sozinho quando estiver completo.' : 'Salvando em instantes...') : salvoEm ? `✓ Salvo automaticamente às ${salvoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+          </div>
           <div className="bd-doc-editor__form-footer">
             <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar recibo'}</Button>
             {isEdit
@@ -223,7 +289,7 @@ export default function ReciboForm() {
         <div className="bd-doc-editor__preview">
           {!isEdit && (
             <div style={{ background: '#FFF4D6', border: '1px solid #F5C84C', color: '#7A4B00', borderRadius: 10, padding: '10px 14px', marginBottom: 12, fontWeight: 600 }}>
-              Rascunho: este recibo ainda NÃO está salvo. Clique em "Salvar recibo" para ele ficar no histórico.
+              Rascunho: este recibo ainda NÃO está salvo. Ele é salvo sozinho assim que cliente e valores estiverem preenchidos.
             </div>
           )}
           {isEdit && acabouDeSalvar && (
