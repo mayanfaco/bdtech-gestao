@@ -50,7 +50,7 @@ function inteiroPorExtenso(n) {
   if (partes.length === 1) return partes[0].texto;
   const last = partes[partes.length - 1];
   const rest = partes.slice(0, -1).map((p) => p.texto);
-  const joiner = (last.valor < 100 || last.valor % 100 === 0) ? ' e ' : ', ';
+  const joiner = (last.valor < 100 || last.valor % 100 === 0) ? ' e ' : ' ';
   return rest.join(', ') + joiner + last.texto;
 }
 

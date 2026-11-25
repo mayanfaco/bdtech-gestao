@@ -127,3 +127,10 @@ describe('ajuda: retomar depois', () => {
     expect(buscarAjuda('cliente quer deixar para o próximo ano')[0].id).toBe('retomar-depois');
   });
 });
+
+describe('ajuda: recibo', () => {
+  it('acha o recibo e os recebimentos', () => {
+    expect(buscarAjuda('preciso emitir um recibo')[0].id).toBe('recibo');
+    expect(buscarAjuda('quem está me devendo')[0].id).toBe('recebimentos');
+  });
+});

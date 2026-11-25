@@ -42,8 +42,9 @@ if (typeof document !== 'undefined' && !document.getElementById('bd-sidebar-css'
 }
 
 // Menu em grupos curtos: primeiro o que se usa todo dia para vender.
+// Menu em grupos curtos: primeiro o que se usa todo dia para vender.
 const NAV = [
-  { to: '/', label: 'Início', icon: I.dashboard, end: true },
+  { to: '/', label: 'Início', icon: I.home, end: true },
   { grupo: 'Vender' },
   { to: '/funis', label: 'Funis', icon: I.funnel, area: 'prospeccao' },
   { to: '/onde-prospectar', label: 'Onde prospectar', icon: I.map, area: 'prospeccao' },
@@ -52,10 +53,13 @@ const NAV = [
   { to: '/clientes', label: 'Clientes', icon: I.users },
   { to: '/propostas', label: 'Propostas', icon: I.file },
   { to: '/contratos', label: 'Contratos', icon: I.contract },
+  { to: '/recebimentos', label: 'Recebimentos', icon: I.money },
+  { to: '/recibos', label: 'Recibos', icon: I.receipt },
   { to: '/calendario', label: 'Calendário', icon: I.calendar },
   { to: '/tarefas', label: 'Tarefas', icon: I.checklist },
+  { to: '/relatorios', label: 'Relatórios', icon: I.dashboard },
   { grupo: 'Para mim' },
-  { to: '/meu-lar', label: 'Meu Lar', icon: I.home, area: 'lar' },
+  { to: '/meu-lar', label: 'Meu Lar', icon: I.lar, area: 'lar' },
   { to: '/tutorial', label: 'Tutorial', icon: I.school, tutorial: true },
   { to: '/configuracoes', label: 'Configurações', icon: I.settings },
 ];
@@ -64,7 +68,7 @@ export const SIDEBAR_WIDTH_PX = SIDEBAR_WIDTH;
 
 export function Sidebar({ open = false, onClose }) {
   const location = useLocation();
-  const isDash = location.pathname === '/';
+  const isDash = location.pathname === '/relatorios';
   const tutorial = useTutorial();
   return (
     <>

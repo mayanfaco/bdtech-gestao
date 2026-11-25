@@ -175,7 +175,7 @@ export function AvisoMigration() {
   return (
     <div className="fx-aviso">
       <strong>Falta um passo no banco de dados.</strong> Esta parte precisa da atualização
-      <code style={{ margin: '0 4px' }}>supabase/migrations/0010_funis_automacoes.sql</code>.
+      <code style={{ margin: '0 4px' }}>supabase/migrations/0015_funis_automacoes.sql</code>.
       Peça para quem cuida do sistema abrir o Supabase → SQL Editor, colar esse arquivo e clicar em <em>Run</em>.
       Ela só adiciona coisas novas: nenhum dado é apagado.
     </div>

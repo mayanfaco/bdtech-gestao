@@ -1,15 +1,8 @@
 import React from 'react';
 import { formatCurrency } from '../../lib/proposalCalculations.js';
+import { dataLonga } from '../../lib/dateUtils.js';
 import { Badge } from '../../design-system/components/feedback/Badge.jsx';
 import logotypeNavy from '../../design-system/assets/brand/bdtech-logotype-navy.svg';
-
-const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-function dataLonga(iso) {
-  if (!iso) return '—';
-  const [ano, mes, dia] = iso.split('-').map(Number);
-  if (!ano || !mes || !dia) return '—';
-  return `${dia} de ${MESES[mes - 1]} de ${ano}`;
-}
 
 function SectionHeading({ number, title }) {
   return (
@@ -47,13 +40,11 @@ function ClauseBlock({ children }) {
  */
 export function ContratoDocumentPreview({ contract }) {
   const isModelo2 = contract.modelo === 'modelo2';
-  const numero = `CONT-${contract.data_inicio ? new Date(contract.data_inicio).getFullYear() : ''}-${String(contract.numero ?? '').padStart(4, '0')}`;
 
   return (
     <div className="bd-print-page">
-      <header className="bd-u-flex bd-u-items-center bd-u-justify-between" style={{ marginBottom: 'var(--bd-space-5)' }}>
+      <header className="bd-u-flex bd-u-items-center" style={{ marginBottom: 'var(--bd-space-5)' }}>
         <img src={logotypeNavy} alt="BDTECH" style={{ height: 32, width: 'auto' }} />
-        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--bd-text-muted)' }}>{numero}</div>
       </header>
 
       <div className="bd-print-avoid-break" style={{
@@ -176,19 +167,15 @@ export function ContratoDocumentPreview({ contract }) {
             <div className="bd-u-flex-col bd-u-gap-2">
               {contract.parcela1_valor != null && contract.parcela1_valor !== '' && (
                 <div className="bd-u-flex bd-u-justify-between" style={{ fontSize: 13, color: 'var(--bd-text-body)', borderBottom: '1px solid var(--bd-border-subtle)', paddingBottom: 8 }}>
-                  <span>1ª parcela — adiantamento/início dos serviços, em {dataLonga(contract.parcela1_data)}</span>
+                  <span>1ª parcela — sinal, em {dataLonga(contract.parcela1_data)}</span>
                   <strong>{formatCurrency(contract.parcela1_valor)}</strong>
-                </div>
-              )}
-              {contract.parcela2_valor != null && contract.parcela2_valor !== '' && (
-                <div className="bd-u-flex bd-u-justify-between" style={{ fontSize: 13, color: 'var(--bd-text-body)', borderBottom: '1px solid var(--bd-border-subtle)', paddingBottom: 8 }}>
-                  <span>2ª parcela, em {dataLonga(contract.parcela2_data)}</span>
-                  <strong>{formatCurrency(contract.parcela2_valor)}</strong>
                 </div>
               )}
               {contract.parcelas_mensais_valor != null && contract.parcelas_mensais_valor !== '' && (
                 <div className="bd-u-flex bd-u-justify-between" style={{ fontSize: 13, color: 'var(--bd-text-body)' }}>
-                  <span>Parcelas mensais restantes, a partir de {dataLonga(contract.parcelas_mensais_inicio)}</span>
+                  <span>
+                    {contract.parcelas_mensais_quantidade ? `${contract.parcelas_mensais_quantidade}x` : 'Parcelas'} restantes, a partir de {dataLonga(contract.parcelas_mensais_inicio)}
+                  </span>
                   <strong>{formatCurrency(contract.parcelas_mensais_valor)} cada</strong>
                 </div>
               )}
@@ -196,8 +183,7 @@ export function ContratoDocumentPreview({ contract }) {
           </div>
         </div>
         <p style={{ marginTop: 'var(--bd-space-3)', fontSize: 13, color: 'var(--bd-text-muted)', fontStyle: 'italic' }}>
-          <strong>Parágrafo Segundo:</strong> O pagamento poderá ser efetuado via PIX ou depósito bancário, mediante a apresentação da respectiva
-          Nota Fiscal de Serviços emitida pela CONTRATADA.
+          <strong>Parágrafo Segundo:</strong> O pagamento poderá ser efetuado via PIX ou depósito bancário.
         </p>
       </div>
 
@@ -220,27 +206,39 @@ export function ContratoDocumentPreview({ contract }) {
       </p>
       <p style={{ marginTop: 6, fontSize: 13, color: 'var(--bd-text-body)' }}>{contract.cidade_assinatura || '—'}, {dataLonga(contract.data_assinatura)}.</p>
 
-      <div className="bd-u-grid-2 bd-u-gap-5" style={{ marginTop: 'var(--bd-space-8)' }}>
-        <div style={{ borderTop: '2px solid var(--bd-navy-900)', paddingTop: 'var(--bd-space-3)' }}>
+      <div className="bd-u-grid-2 bd-u-gap-5" style={{ marginTop: 'var(--bd-space-12)' }}>
+        <div className="bd-print-avoid-break" style={{ borderTop: '2px solid var(--bd-navy-900)', paddingTop: 'var(--bd-space-3)' }}>
           <strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-navy-900)' }}>Contratante</strong>
           <div style={{ fontSize: 13, color: 'var(--bd-text-body)', marginTop: 6 }}>{contract.contratante_nome || '—'}</div>
           <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>CNPJ nº {contract.contratante_cnpj || '—'}</div>
-          <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>Síndico: {contract.contratante_sindico_nome || '—'}</div>
+          <div className="bd-doc-sign-line" style={{ height: 90, marginTop: 'var(--bd-space-5)', borderBottom: '1px solid var(--bd-border-strong)' }} />
+          <div style={{ marginTop: 'var(--bd-space-3)', fontSize: 13, fontWeight: 700, color: 'var(--bd-navy-900)' }}>{contract.contratante_sindico_nome || '—'}</div>
+          <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>Síndico(a) · CONTRATANTE</div>
         </div>
-        <div style={{ borderTop: '2px solid var(--bd-navy-900)', paddingTop: 'var(--bd-space-3)' }}>
+        <div className="bd-print-avoid-break" style={{ borderTop: '2px solid var(--bd-navy-900)', paddingTop: 'var(--bd-space-3)' }}>
           <strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-navy-900)' }}>Contratada</strong>
           <div style={{ fontSize: 13, color: 'var(--bd-text-body)', marginTop: 6 }}>{contract.contratada_razao_social || '—'}</div>
           <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>CNPJ nº {contract.contratada_cnpj || '—'}</div>
-          <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>Representante: {contract.contratada_representante || '—'}</div>
+          <div className="bd-doc-sign-line" style={{ height: 90, marginTop: 'var(--bd-space-5)', borderBottom: '1px solid var(--bd-border-strong)' }} />
+          <div style={{ marginTop: 'var(--bd-space-3)', fontSize: 13, fontWeight: 700, color: 'var(--bd-navy-900)' }}>{contract.contratada_representante || '—'}</div>
+          <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>Representante legal · CONTRATADA</div>
         </div>
       </div>
 
       <div style={{ marginTop: 'var(--bd-space-8)', paddingTop: 'var(--bd-space-5)', borderTop: '1px solid var(--bd-border-default)' }}>
         <strong style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--bd-text-muted)' }}>Testemunhas</strong>
-        <div style={{ marginTop: 16, fontSize: 13, color: 'var(--bd-text-body)' }}>Nome: _____________________________________ &nbsp; CPF: _____________________________________</div>
-        <div style={{ marginTop: 8, fontSize: 13, color: 'var(--bd-text-body)' }}>Assinatura: ________________________________</div>
-        <div style={{ marginTop: 16, fontSize: 13, color: 'var(--bd-text-body)' }}>Nome: _____________________________________ &nbsp; CPF: _____________________________________</div>
-        <div style={{ marginTop: 8, fontSize: 13, color: 'var(--bd-text-body)' }}>Assinatura: ________________________________</div>
+        <div className="bd-u-grid-2 bd-u-gap-5" style={{ marginTop: 16 }}>
+          <div className="bd-print-avoid-break">
+            <div className="bd-doc-sign-line" style={{ height: 90, borderBottom: '1px solid var(--bd-border-strong)' }} />
+            <div style={{ marginTop: 'var(--bd-space-3)', fontSize: 13, color: 'var(--bd-text-body)' }}>{contract.testemunha1_nome || '—'}</div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>CPF: {contract.testemunha1_cpf || '—'}</div>
+          </div>
+          <div className="bd-print-avoid-break">
+            <div className="bd-doc-sign-line" style={{ height: 90, borderBottom: '1px solid var(--bd-border-strong)' }} />
+            <div style={{ marginTop: 'var(--bd-space-3)', fontSize: 13, color: 'var(--bd-text-body)' }}>{contract.testemunha2_nome || '—'}</div>
+            <div style={{ fontSize: 12, color: 'var(--bd-text-muted)' }}>CPF: {contract.testemunha2_cpf || '—'}</div>
+          </div>
+        </div>
       </div>
     </div>
   );

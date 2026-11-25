@@ -14,11 +14,14 @@ import { Badge } from '../design-system/components/feedback/Badge.jsx';
 import { Select } from '../design-system/components/forms/Select.jsx';
 import { EmptyState } from '../components/EmptyState.jsx';
 import { injectDashboardTechCss } from '../components/dashboard/dashboardTechCss.js';
+import { mudarMes } from '../lib/meses.js';
+import { SeletorMes, useMesNaUrl } from '../components/SeletorMes.jsx';
 
 injectDashboardTechCss();
 
 const TONE_HEX = { brand: '#009FE0', success: '#16A34A', warning: '#F59E0B', danger: '#E5484D', neutral: '#647386' };
 const PERIODO_OPTIONS = [
+  { value: 'mes', label: 'Por mês' },
   { value: '30', label: 'Últimos 30 dias' }, { value: '90', label: 'Últimos 90 dias' },
   { value: '365', label: 'Último ano' }, { value: 'all', label: 'Todo o período' },
 ];
@@ -26,7 +29,9 @@ const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'se
 
 export default function Dashboard() {
   const staffOptions = useStaffOptions();
-  const [periodo, setPeriodo] = React.useState('90');
+  // Voltando de uma lista com ?mes= no endereço, continua na visão por mês.
+  const [periodo, setPeriodo] = React.useState(() => (new URLSearchParams(window.location.search).has('mes') ? 'mes' : '90'));
+  const [mes, setMes] = useMesNaUrl();
   const [responsavel, setResponsavel] = React.useState('');
   const [data, setData] = React.useState(null);
 
@@ -48,8 +53,11 @@ export default function Dashboard() {
 
   if (!data) return null;
 
-  const since = periodo === 'all' ? null : new Date(Date.now() - Number(periodo) * 86400000);
-  const inPeriod = (dateStr) => !since || new Date(dateStr) >= since;
+  const porMes = periodo === 'mes' && Boolean(mes);
+  const since = porMes ? new Date(`${mes}-01T00:00:00`)
+    : periodo === 'all' || periodo === 'mes' ? null : new Date(Date.now() - Number(periodo) * 86400000);
+  const ate = porMes ? new Date(`${mudarMes(mes, 1)}-01T00:00:00`) : null;
+  const inPeriod = (dateStr) => (!since || new Date(dateStr) >= since) && (!ate || new Date(dateStr) < ate);
   const byResp = (row) => !responsavel || row.responsavel_user_id === responsavel;
   // Considera "no período" se a proposta/contrato foi criado OU teve o status
   // alterado dentro da janela — sem isso, um registro criado antes do período
@@ -60,11 +68,12 @@ export default function Dashboard() {
     const changed = row.status_changed_at ? new Date(row.status_changed_at) : created;
     return changed > created ? changed : created;
   };
-  const inPeriodActivity = (row) => !since || activityDate(row) >= since;
+  const inPeriodActivity = (row) => (!since || activityDate(row) >= since) && (!ate || activityDate(row) < ate);
 
   const qs = (params) => {
     const usp = new URLSearchParams();
     if (since) usp.set('desde', since.toISOString());
+    if (porMes) usp.set('mes', mes);
     if (responsavel) usp.set('responsavel', responsavel);
     Object.entries(params ?? {}).forEach(([k, v]) => { if (v != null && v !== '') usp.set(k, v); });
     const s = usp.toString();
@@ -141,6 +150,11 @@ export default function Dashboard() {
             <div>
               <Select value={periodo} onChange={(e) => setPeriodo(e.target.value)} options={PERIODO_OPTIONS} />
             </div>
+            {periodo === 'mes' && (
+              <div style={{ background: '#fff', borderRadius: 'var(--bd-radius-md)', padding: '4px 8px' }}>
+                <SeletorMes mes={mes} onChange={setMes} />
+              </div>
+            )}
             <div>
               <Select value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Todos os responsáveis" options={staffOptions} />
             </div>

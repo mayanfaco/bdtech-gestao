@@ -1,7 +1,7 @@
 -- BDTECH Gestão — "Retomar depois": cliente que pediu para conversar mais
 -- tarde (próximo mês, próximo ano...). O cartão sai dos funis, fica guardado
 -- e volta sozinho para a atenção na data combinada.
--- Rode DEPOIS da 0010. SEGURO: só adiciona colunas e atualiza a função de
+-- Rode DEPOIS da 0015. SEGURO: só adiciona colunas e atualiza a função de
 -- automação. Nada é apagado. Pode ser rodada mais de uma vez.
 
 -- 1. Colunas novas (contatos e propostas)

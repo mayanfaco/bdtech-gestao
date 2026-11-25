@@ -1,5 +1,5 @@
 -- BDTECH Gestão — Funis (Prospecção, Follow-up, Vendas) com automações,
--- progresso do tutorial. Rode isto DEPOIS das migrations anteriores (0001 a 0009),
+-- progresso do tutorial. Rode isto DEPOIS das migrations anteriores (0001 a 0014),
 -- no SQL Editor do Supabase.
 --
 -- SEGURO PARA DADOS EXISTENTES: esta migration só ADICIONA colunas, tabelas,

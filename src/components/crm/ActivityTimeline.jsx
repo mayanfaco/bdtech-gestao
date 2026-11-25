@@ -8,6 +8,8 @@ const TYPE_LABEL = {
   stage_change: 'Mudança de etapa', status_change: 'Mudança de status', file: 'Arquivo',
   proposal_created: 'Proposta criada', proposal_sent: 'Proposta enviada', contract_created: 'Contrato criado',
   task_created: 'Tarefa criada', email: 'E-mail', conversion: 'Conversão', system: 'Sistema',
+  receipt_created: 'Recibo emitido', payment_received: 'Pagamento recebido', payment_undone: 'Pagamento desfeito',
+  collection_contact: 'Cobrança', receivable_changed: 'Parcela alterada',
 };
 
 function formatDate(iso) {

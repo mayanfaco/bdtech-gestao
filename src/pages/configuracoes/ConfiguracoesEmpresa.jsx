@@ -5,6 +5,7 @@ import { Textarea } from '../../design-system/components/forms/Textarea.jsx';
 import { Button } from '../../design-system/components/buttons/Button.jsx';
 import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { Card } from '../../design-system/components/surfaces/Card.jsx';
+import { MENSAGEM_COBRANCA_PADRAO } from '../../lib/recebimentos.js';
 
 export default function ConfiguracoesEmpresa() {
   const [settings, setSettings] = React.useState(null);
@@ -46,6 +47,12 @@ export default function ConfiguracoesEmpresa() {
           <Input label="Representante legal" value={settings.representante_legal ?? ''} onChange={set('representante_legal')} />
           <Input label="CPF do representante" value={settings.representante_cpf ?? ''} onChange={set('representante_cpf')} />
         </div>
+
+        <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, marginTop: 'var(--bd-space-4)' }}>Cobrança</h3>
+        <Input label="Chave Pix" value={settings.chave_pix ?? ''} onChange={set('chave_pix')} />
+        <Textarea label="Mensagem de cobrança" rows={5} value={settings.mensagem_cobranca ?? ''} onChange={set('mensagem_cobranca')}
+          placeholder={MENSAGEM_COBRANCA_PADRAO}
+          hint="Deixe em branco para usar a mensagem padrão. Use {contato}, {servico}, {valor}, {vencimento} e {pix} para o sistema preencher." />
 
         <h3 style={{ fontFamily: 'var(--bd-font-display)', fontSize: 15, marginTop: 'var(--bd-space-4)' }}>Textos padrão das propostas</h3>
         <p style={{ fontSize: 13, color: 'var(--bd-text-muted)', margin: 0 }}>
