@@ -53,6 +53,8 @@ export default function ReciboForm() {
   const [loading, setLoading] = React.useState(isEdit || Boolean(pagamentoId));
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  // Depois de salvar, a tela mostra a confirmação (a URL ganha ?salvo=1).
+  const acabouDeSalvar = searchParams.get('salvo') === '1';
 
   function selecionarCliente(clienteId, lista) {
     const cliente = lista.find((c) => c.id === clienteId);
@@ -103,9 +105,25 @@ export default function ReciboForm() {
     valorTotal: form.valor_total, valorRecebido: form.valor_recebido, parcelasRestantes: form.parcelas_restantes,
   });
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!doPagamento && calculo.saldo < 0) { setError('O valor recebido não pode ser maior que o valor total do contrato.'); return; }
+  // Validação própria, com a lista do que falta. A validação do navegador
+  // mostrava só um balãozinho que some rápido, e o recibo ficava sem salvar.
+  function faltando() {
+    const lista = [];
+    if (!form.client_id) lista.push('Escolha o cliente.');
+    if (!form.data_recibo) lista.push('Preencha a data do recibo.');
+    if (!form.data_inicio_servicos) lista.push('Preencha a data de início dos serviços.');
+    if (!doPagamento) {
+      if (!(Number(form.valor_total) > 0)) lista.push('Preencha o valor total (ex.: 1800 ou 1800.50).');
+      if (!(Number(form.valor_recebido) > 0)) lista.push('Preencha o valor recebido (ex.: 300 ou 300.50).');
+      if (calculo.saldo < 0) lista.push('O valor recebido não pode ser maior que o valor total do contrato.');
+    }
+    return lista;
+  }
+
+  async function handleSubmit(e, { imprimir = false } = {}) {
+    e?.preventDefault();
+    const lista = faltando();
+    if (lista.length) { setError(`O recibo ainda NÃO foi salvo. Falta: ${lista.join(' ')}`); return; }
     setSaving(true);
     setError('');
     const payload = {
@@ -131,7 +149,7 @@ export default function ReciboForm() {
       setError(result.error.code === '23505' ? 'Este pagamento já tem um recibo. Procure em Recibos.' : mensagemDeErro(result.error, MIGRATION));
       return;
     }
-    navigate(`/recibos/${result.data.id}/editar`, { replace: true });
+    navigate(imprimir ? `/recibos/${result.data.id}/pdf` : `/recibos/${result.data.id}/editar?salvo=1`, { replace: true });
   }
 
   if (loading) return null;
@@ -142,7 +160,7 @@ export default function ReciboForm() {
     <div className="bd-u-flex-col bd-u-gap-3">
       <BackButton to={doPagamento ? '/recebimentos' : '/recibos'} label={doPagamento ? 'Voltar para Recebimentos' : 'Voltar para Recibos'} />
       <div className="bd-doc-editor">
-        <form onSubmit={handleSubmit} className="bd-doc-editor__form">
+        <form onSubmit={handleSubmit} noValidate className="bd-doc-editor__form">
           <div className="bd-doc-editor__form-scroll bd-u-flex-col bd-u-gap-4">
             {doPagamento ? (
               <>
@@ -196,11 +214,23 @@ export default function ReciboForm() {
           </div>
           <div className="bd-doc-editor__form-footer">
             <Button type="submit" loading={saving}>{isEdit ? 'Salvar alterações' : 'Salvar recibo'}</Button>
-            {isEdit && <Button variant="outline" as={Link} to={`/recibos/${id}/pdf`}>Imprimir / PDF</Button>}
+            {isEdit
+              ? <Button variant="outline" as={Link} to={`/recibos/${id}/pdf`}>Imprimir / PDF</Button>
+              : <Button type="button" variant="outline" disabled={saving} onClick={() => handleSubmit(null, { imprimir: true })}>Salvar e imprimir</Button>}
           </div>
         </form>
 
         <div className="bd-doc-editor__preview">
+          {!isEdit && (
+            <div style={{ background: '#FFF4D6', border: '1px solid #F5C84C', color: '#7A4B00', borderRadius: 10, padding: '10px 14px', marginBottom: 12, fontWeight: 600 }}>
+              Rascunho: este recibo ainda NÃO está salvo. Clique em "Salvar recibo" para ele ficar no histórico.
+            </div>
+          )}
+          {isEdit && acabouDeSalvar && (
+            <div className="no-print" style={{ marginBottom: 12 }}>
+              <Alert tone="success">Recibo salvo! Ele já aparece em Recibos e no histórico do cliente.</Alert>
+            </div>
+          )}
           <ReciboDocument recibo={form} settings={settings} />
         </div>
       </div>
