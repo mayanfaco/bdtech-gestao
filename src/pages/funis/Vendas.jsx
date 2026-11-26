@@ -8,7 +8,6 @@ import { atualizarProposta, guardarParaDepois, retomarAgora } from './useFunisDa
 import { BotaoRetomar, SeloVoltou, ModalRetomar, ModalGuardados } from '../../components/funis/Retomar.jsx';
 import { ModalMotivo } from './modais.jsx';
 
-const DIAS_FECHADAS_NO_QUADRO = 60;
 
 export function Vendas({ dados, recarregar, avisar }) {
   const navigate = useNavigate();
@@ -16,12 +15,10 @@ export function Vendas({ dados, recarregar, avisar }) {
   const [modal, setModal] = React.useState(null);
   const [festa, setFesta] = React.useState(false);
 
-  const limiteFechadas = Date.now() - DIAS_FECHADAS_NO_QUADRO * 86400000;
   const propostas = dados.propostas.filter((p) => {
     const etapa = etapaDeVenda(p.status);
     if (!etapa || etapa === 'nao_fechou') return false;
     if (estaAdiado(p)) return false;
-    if (etapa === 'fechou') return new Date(p.status_changed_at ?? p.created_at).getTime() >= limiteFechadas;
     return true;
   });
   const guardadas = dados.propostas.filter((p) => estaAdiado(p) && !['fechou', 'nao_fechou'].includes(etapaDeVenda(p.status)));
@@ -102,7 +99,7 @@ export function Vendas({ dados, recarregar, avisar }) {
 
       {visao === 'quadro' && (
         <Quadro
-          colunas={VENDAS_ETAPAS.map((e) => ({ ...e, dica: e.key === 'fechou' ? `Fechadas nos últimos ${DIAS_FECHADAS_NO_QUADRO} dias.` : undefined }))}
+          colunas={VENDAS_ETAPAS.map((e) => ({ ...e, dica: e.key === 'fechou' ? 'Todos os clientes fechados, do mais recente ao mais antigo.' : undefined }))}
           itens={propostas}
           colunaDe={(p) => etapaDeVenda(p.status)}
           renderCartao={cartao}

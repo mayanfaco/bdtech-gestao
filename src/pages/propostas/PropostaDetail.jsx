@@ -10,6 +10,7 @@ import { Alert } from '../../design-system/components/feedback/Alert.jsx';
 import { ActivityTimeline, QuickNote } from '../../components/crm/ActivityTimeline.jsx';
 import { PropostaFluxo } from '../../components/propostas/PropostaFluxo.jsx';
 import { BackButton } from '../../components/BackButton.jsx';
+import { RecibosVinculados } from '../../components/recibos/RecibosVinculados.jsx';
 
 export default function PropostaDetail() {
   const { id } = useParams();
@@ -180,6 +181,8 @@ export default function PropostaDetail() {
           </Card>
         </div>
       )}
+
+      <RecibosVinculados campo="proposal_id" valor={id} refreshKey={refreshKey} />
 
       <div>
         <h2 style={{ fontSize: 18, marginBottom: 'var(--bd-space-3)' }}>Linha do tempo e follow-up</h2>

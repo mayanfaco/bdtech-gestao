@@ -104,7 +104,7 @@ export default function ClienteDetail() {
       content: receipts.length === 0 ? <EmptyState title="Nenhum recibo para este cliente" /> : (
         <div className="bd-u-flex-col bd-u-gap-2">
           {receipts.map((r) => (
-            <ListRow key={r.id} to={`/recibos/${r.id}/editar`} title={`${reciboNumeroLabel(r)} — ${dataCurta(r.data_recibo)}`}
+            <ListRow key={r.id} to={`/recibos/${r.id}/editar`} title={`${reciboNumeroLabel(r)} — ${dataCurta(r.data_recibo)}${r.referente ? ` · ${r.referente}` : ''}`}
               badge={<Badge tone="success">{formatCurrency(r.valor_recebido)}</Badge>} />
           ))}
         </div>
