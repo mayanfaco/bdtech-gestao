@@ -183,9 +183,15 @@ export default function ReciboForm() {
     // continuar salvando mesmo que a migration 0014 ainda não tenha rodado.
     if (doPagamento) Object.assign(payload, { payment_id: form.payment_id, referente: form.referente, saldo_restante: form.saldo_restante });
 
-    const result = isEdit
-      ? await supabase.from('receipts').update(payload).eq('id', id).select().single()
-      : await supabase.from('receipts').insert(payload).select().single();
+    const gravar = (dados) => (isEdit
+      ? supabase.from('receipts').update(dados).eq('id', id).select().single()
+      : supabase.from('receipts').insert(dados).select().single());
+    let result = await gravar(payload);
+    // Antes da migration 0017 a coluna do contrato não existe: salva sem ela.
+    if (result.error?.code === '42703' && 'contract_id' in payload) {
+      const { contract_id: _semContrato, ...semContrato } = payload;
+      result = await gravar(semContrato);
+    }
 
     setSaving(false);
     salvandoRef.current = false;
